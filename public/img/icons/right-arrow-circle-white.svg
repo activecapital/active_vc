@@ -1,0 +1,18 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+	<title>right-arrow-circle-svg</title>
+	<defs>
+		<clipPath clipPathUnits="userSpaceOnUse" id="cp1">
+			<path d="m0 0h48v48h-48z"/>
+		</clipPath>
+	</defs>
+	<style>
+		.s0 { fill: none;stroke: #ffffff;stroke-width: 3 } 
+		.s1 { fill: none;stroke: #ffffff;stroke-linecap: round;stroke-linejoin: round;stroke-width: 3 } 
+	</style>
+	<g id="Clip-Path" clip-path="url(#cp1)">
+		<g id="Layer">
+			<path id="Layer" class="s0" d="m24 46.5c-12.4 0-22.5-10.1-22.5-22.5 0-12.4 10.1-22.5 22.5-22.5 12.4 0 22.5 10.1 22.5 22.5 0 12.4-10.1 22.5-22.5 22.5z"/>
+			<path id="Layer" fill-rule="evenodd" class="s1" d="m24 15l9 9m0 0l-9 9m9-9h-18"/>
+		</g>
+	</g>
+</svg>
