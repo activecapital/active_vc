@@ -111,9 +111,9 @@ export default function Home() {
           <Image src="/img/active-capital-icon.svg" width={180} height={180} alt="Active Capital Icon" className={`${aboutImgStyles}`} />
         </div>
         <div className={aboutMsgTextContainer}>
-          Active Capital is a venture firm focused on leading pre-seed rounds for AI-focused business software companies.
-          We invest in ambitious founders who are building at the intersection of software, cloud, and AI.
-          We love founders who are willing to stay super scrappy until finding true product market fit. Our initial check size is typically in the $500k-$1M range and we will invest significantly more as companies grow and our relationship develops. We like to invest early and prefer to be a material part of the first $1-2M raised.
+        Active Capital is a venture firm focused on leading pre-seed rounds for AI-powered business software companies.
+        We invest in ambitious founders solving real business problems at the intersection of software, cloud, & AI.
+        We love founders who are willing to stay super scrappy until finding true product market fit. Our initial check size is typically in the $500k-$1M range and we will invest significantly more as companies grow and our relationship develops. We like to invest early and prefer to be a material part of the first $1-2M raised.
         </div>
       </div>
 
