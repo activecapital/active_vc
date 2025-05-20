@@ -37,7 +37,7 @@ const Team = () => {
     'pat_matthews': 'https://patmatthews.com',
     'cat_dizon': 'https://www.linkedin.com/in/cat-dizon-43ab858/',
     'chris_saum': 'https://www.linkedin.com/in/chris-saum-84938047/',
-    'avery_keller': 'https://www.linkedin.com/in/averylkeller/'
+    'avery_keller': 'https://www.linkedin.com/in/averykellermeyer/'
   }
 
   return <div className={teamContainerStyles}>
@@ -79,7 +79,7 @@ const Team = () => {
     </Link>
 
     {/* Chris Saum */}
-    <Link href={profileUrls.pat_matthews} target="_blank"
+    <Link href={profileUrls.chris_saum} target="_blank"
       onClick={() => { profileClicked('Chris Saum', profileUrls.chris_saum) }}>
       <div className={memberCardStyles}>
         <div className="flex justify-center items-center mb-4">
