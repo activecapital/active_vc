@@ -88,15 +88,22 @@ export default function Home() {
         </div>
         <div className={`${aboutMsgTextContainer}`}>
           <div>
-            Hi, I&apos;m Pat.  I&apos;m an entrepreneur turned investor.  I&apos;ve been starting,
-            scaling, and investing in startups my entire career.  I started Active Capital because I
-            love investing in ambitious founders and doing my best to help them reach their potential.
-            I&apos;ve been working in SaaS and cloud infrastructure for 20+ years and believe the future
-            is brighter than ever.  If you&apos;re a pre-seed founder building products at the intersection
-            of SaaS, cloud, &amp; AI, please get in touch. We welcome warm intros and {` `}
+            Hi, I&apos;m Pat, an entrepreneur turned investor, and the founder of Active Capital.  
+            Over the past 20+ years, I&apos;ve started, scaled, and invested in dozens of enterprise 
+            software and cloud infrastructure companies—often in cities outside the usual tech hubs.  
+            I launched Active Capital because I believe founders deserve early capital from someone 
+            who&apos;s walked in their shoes. Someone who truly understands the challenges of starting 
+            and building a great company.  As an entrepreneur, I&apos;ve helped lead companies through 
+            major shifts, from old-school software to SaaS, cloud, and mobile. Today, I couldn&apos;t be 
+            more excited to back the next generation of founders who are re-shaping software and infrastructure 
+            in the AI era.  If you&apos;re building something bold at the pre-seed stage, 
+            I&apos;d love to hear from you. 
+            <br/><br/>
+            Warm intros and{` `}
             <Link href={`#`}
               onClick={handleContactEmailClicked}
-              className={`underline underline-offset-2 ${hoverDimmed}`}>cold emails!</Link>
+              className={`underline underline-offset-2 ${hoverDimmed}`}>cold emails</Link>
+              {` `}are always welcome.
           </div>
         </div>
       </div>
@@ -111,9 +118,10 @@ export default function Home() {
           <Image src="/img/active-capital-icon.svg" width={180} height={180} alt="Active Capital Icon" className={`${aboutImgStyles}`} />
         </div>
         <div className={aboutMsgTextContainer}>
-        Active Capital is a venture firm focused on leading pre-seed rounds for AI-powered business software companies.
-        We invest in ambitious founders solving real business problems at the intersection of software, cloud, & AI.
-        We love founders who are willing to stay super scrappy until finding true product market fit. Our initial check size is typically in the $500k-$1M range and we will invest significantly more as companies grow and our relationship develops. We like to invest early and prefer to be a material part of the first $1-2M raised.
+        Active Capital is a venture firm focused on pre-seed investing in the future of enterprise software &amp; 
+        cloud infrastructure. We back ambitious, technical founders, often in underdog cities across America, who 
+        are building software &amp; AI products to solve real business problems.  We invest $500k to $1M in small 
+        pre-seed rounds led by founders who are financially disciplined and customer obsessed.
         </div>
       </div>
 
@@ -155,7 +163,7 @@ export default function Home() {
       <h2 className={`${sectionHeadingStyles}`}>Contact</h2>
 
       <div className={`${subHeadingStyles}`}>
-        If you are a pre-seed founder building the future of business software, please get in touch!
+        If you&apos;re building something bold at the pre-seed stage, we&apos;d love to hear from you.
       </div>
 
       <Contact />

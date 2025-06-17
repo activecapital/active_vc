@@ -33,9 +33,9 @@ const TopHeroCard = () => {
       leading-[24px] tracking-wide">
       {/* mobile screens */}
       <div className='md:hidden'>Pre-Seed Investing in the</div>
-      <div className='md:hidden'>Future of AI-Powered Business Software</div>
+      <div className='md:hidden'>Future of Enterprise Software</div>
       {/* large screens */}
-      <div className='hidden md:block'>Pre-Seed Investing in the Future of AI-Powered Business Software
+      <div className='hidden md:block'>Pre-Seed Investing in the Future of Enterprise Software
       </div>
     </div>
   </div>)
