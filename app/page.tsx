@@ -97,13 +97,7 @@ export default function Home() {
             major shifts, from old-school software to SaaS, cloud, and mobile. Today, I couldn&apos;t be 
             more excited to back the next generation of founders who are re-shaping software and infrastructure 
             in the AI era.  If you&apos;re building something bold at the pre-seed stage, 
-            I&apos;d love to hear from you. 
-            <br/><br/>
-            Warm intros and{` `}
-            <Link href={`#`}
-              onClick={handleContactEmailClicked}
-              className={`underline underline-offset-2 ${hoverDimmed}`}>cold emails</Link>
-              {` `}are always welcome.
+            I&apos;d love to hear from you.
           </div>
         </div>
       </div>
