@@ -112,10 +112,11 @@ export default function Home() {
           <Image src="/img/active-capital-icon.svg" width={180} height={180} alt="Active Capital Icon" className={`${aboutImgStyles}`} />
         </div>
         <div className={aboutMsgTextContainer}>
-        Active Capital is a venture firm focused on pre-seed investing in the future of enterprise software &amp; 
-        cloud infrastructure. We back ambitious, technical founders, often in underdog cities across America, who 
-        are building software &amp; AI products to solve real business problems.  We invest $500k to $1M in small 
-        pre-seed rounds led by founders who are financially disciplined and customer obsessed.
+        Active Capital is a venture firm focused on pre-seed investing in the future of 
+        enterprise software &amp; cloud infrastructure. We back ambitious, technical founders, 
+        often in underdog cities across America, who are building software &amp; AI products to solve 
+        real business problems. We invest $500k to $1M in small pre-seed rounds and reserve capital 
+        to write bigger checks in future rounds.
         </div>
       </div>
 
