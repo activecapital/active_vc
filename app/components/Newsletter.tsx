@@ -4,7 +4,7 @@ import { track } from '@vercel/analytics'
 import { sha256 } from '../src/utils/hashString'
 
 import { faintBorder } from "../src/cssClasses"
-import { UserIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 
 const containerStyles = `grid grid-cols-1
       w-full
@@ -96,7 +96,7 @@ const Newsletter = () => {
               <label htmlFor="first_name" className="mb-2 block text-left text-sm font-medium text-gray-700">First Name</label>
               <div className="relative">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <UserIcon className="h-5 w-5 text-gray-200" aria-hidden="true" />
+                  <UserCircleIcon className="h-5 w-5 text-gray-200" aria-hidden="true" />
                 </div>
                 <input
                   type="text"
