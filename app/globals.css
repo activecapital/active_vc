@@ -48,3 +48,44 @@ body {
     text-wrap: balance;
   }
 }
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-fast {
+  animation: spin 0.8s linear infinite;
+}
+
+/* Override Chrome's autofill background color */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    /* Use a very large box-shadow to cover the autofill background.
+       The color should match your desired input background. */
+    -webkit-box-shadow: 0 0 0px 1000px rgba(255,255,255,0.05) inset !important;
+    box-shadow: 0 0 0px 1000px rgba(255,255,255,0.05) inset !important;
+
+    /* Add a small transition delay to the box-shadow */
+    transition: background-color 5000s ease-in-out 0s; /* Very long duration, no delay on initial */
+    -webkit-transition: background-color 5000s ease-in-out 0s; /* For WebKit browsers */
+
+    /* Ensure text color remains readable */
+    -webkit-text-fill-color: #fff !important;
+    color: #fff !important;
+
+    /* Ensure border color is consistent */
+    border-color: rgb(255 255 255 / 0.09) !important;
+}
+
+/* Ensure placeholder color is consistent if it gets affected */
+input:-webkit-autofill::placeholder {
+    -webkit-text-fill-color: #a0aec0 !important;
+    color: #a0aec0 !important;
+}

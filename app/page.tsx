@@ -11,6 +11,7 @@ import Testimonials from "./components/Testimonials"
 import Team from "./components/Team"
 import Advisors from "./components/Advisors"
 import Contact from "./components/Contact"
+import Newsletter from "./components/Newsletter"
 
 
 const fontLexendDeca = Lexend_Deca({
@@ -153,6 +154,15 @@ export default function Home() {
       </div>
 
       <Advisors />
+
+      {/* Newsletter */}
+      <h2 className={`${sectionHeadingStyles}`}>Newsletter</h2>
+
+      <div className={`${subHeadingStyles}`}>
+        Sign up to stay informed.
+      </div>
+
+      <Newsletter />
 
       {/* Contact */}
       <h2 className={`${sectionHeadingStyles}`}>Contact</h2>
