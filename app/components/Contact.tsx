@@ -3,7 +3,7 @@ import { track } from '@vercel/analytics'
 import Image from "next/image"
 import Link from "next/link"
 
-const teamContactEmail = 'team@active.vc'
+const teamContactEmail = process.env.NEXT_PUBLIC_TEAM_CONTACT_EMAIL || ""
 
 const handleContactEmailClicked = (e: React.MouseEvent<HTMLElement>) => {
   e.preventDefault()

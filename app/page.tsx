@@ -52,8 +52,8 @@ export default function Home() {
     pb-4 md:py-8 md:pr-8 
     lg:py-8 lg:pr-8
     `
-
-  const teamContactEmail = 'team@active.vc'
+    
+  const teamContactEmail = process.env.NEXT_PUBLIC_TEAM_CONTACT_EMAIL || ""
 
   const handleContactEmailClicked = (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()

@@ -4,7 +4,7 @@ import { track } from '@vercel/analytics'
 import { sha256 } from '../src/utils/hashString'
 
 import { faintBorder } from "../src/cssClasses"
-import { UserCircleIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, EnvelopeIcon } from '@heroicons/react/24/outline'
 
 const containerStyles = `grid grid-cols-1
       w-full
@@ -26,67 +26,101 @@ const Newsletter = () => {
 
   const [firstNameError, setFirstNameError] = useState<string>('')
   const [emailError, setEmailError] = useState<string>('')
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isSubmittedAndSuccessful, setIsSubmittedAndSuccessful] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isSubmittedAndSuccessful, setIsSubmittedAndSuccessful] = useState<boolean>(false)
+  const [submissionMessage, setSubmissionMessage] = useState<string>('') // This will now ONLY be for errors
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    setFirstNameError('');
-    setEmailError('');
-    setIsSubmittedAndSuccessful(false);
+    setFirstNameError('')
+    setEmailError('')
+    setIsSubmittedAndSuccessful(false)
+    setSubmissionMessage('') // Clear previous message (important for retries)
 
-    let isValid: boolean = true;
+    let isValid: boolean = true
 
     if (firstName.trim() === '') {
-      setFirstNameError('This field is required');
-      isValid = false;
+      setFirstNameError('This field is required')
+      isValid = false
     }
 
     if (email.trim() === '') {
-      setEmailError('This field is required');
-      isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      setEmailError('Please enter a valid email address');
-      isValid = false;
+      setEmailError('This field is required')
+      isValid = false
+    } else if (!/\S+@\S+\.\S/.test(email)) {
+      setEmailError('Please enter a valid email address')
+      isValid = false
     }
 
     if (isValid) {
-      setIsLoading(true);
+      setIsLoading(true) // Start showing the spinner
 
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      try {
+        // Make a POST request to your Next.js API route
+        const response = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email,
+            firstName: firstName,
+          }),
+        })
 
-      setFirstName('');
-      setEmail('');
-      setIsLoading(false);
-      setIsSubmittedAndSuccessful(true);
+        const data = await response.json()
 
-      /* Vercel analytics */
-      const hashedEmail = await sha256(email.toLowerCase()); // Hash email (lowercase for consistency)
-      const hashedFirstName = await sha256(firstName.toLowerCase());
+        if (response.ok) {
+          // Subscription was successful
+          
+          /* Vercel analytics */
+          const hashedEmail = await sha256(email.toLowerCase())
+          const hashedFirstName = await sha256(firstName.toLowerCase())
 
-      track('Newsletter_Subscribed', {
-        email: hashedEmail,
-        first_name: hashedFirstName,
-      });
+          track('Newsletter_Subscribed', {
+            email: hashedEmail,
+            first_name: hashedFirstName,
+          })
+
+          // Add the 1.5-second delay after successful API call
+          await new Promise(resolve => setTimeout(resolve, 1500))
+
+          setFirstName('') // Clear form fields on success
+          setEmail('')
+
+          setIsSubmittedAndSuccessful(true) // This will now hide the form and show `the success message
+        } else {
+          // Subscription failed, display error message from the API route
+          setSubmissionMessage(data.message || 'Failed to subscribe. Please try again.')
+          setIsSubmittedAndSuccessful(false) // Keep form visible for correction
+        }
+      } catch (error) {
+        // Handle network errors or other unexpected issues
+        console.error('Error submitting form:', error)
+        setSubmissionMessage('An unexpected error occurred. Please try again later.')
+        setIsSubmittedAndSuccessful(false) // Keep form visible
+      } finally {
+        setIsLoading(false) // Stop showing the spinner
+      }
     }
-  };
+  }
 
   const handleFirstNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setFirstName(e.target.value);
-    setFirstNameError('');
-  };
+    setFirstName(e.target.value)
+    setFirstNameError('')
+  }
 
   const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-    setEmailError('');
-  };
+    setEmail(e.target.value)
+    setEmailError('')
+  }
 
   return (
     <div className={containerStyles}>
       {isSubmittedAndSuccessful ? (
         <div className="font-bold text-center w-full text-white text-lg">
-          Subscribed. Thank you.
+          Subscribed. Thank you!
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="w-full">
@@ -164,6 +198,12 @@ const Newsletter = () => {
               </button>
             </div>
           </div>
+          {/* Display submission error messages */}
+          {submissionMessage && (
+            <div className="mt-4 text-center text-red-400 text-sm">
+              {submissionMessage}
+            </div>
+          )}
         </form>
       )}
     </div>
