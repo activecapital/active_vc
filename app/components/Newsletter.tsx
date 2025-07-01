@@ -84,7 +84,7 @@ const Newsletter = () => {
           })
 
           // Add the 1.5-second delay after successful API call
-          await new Promise(resolve => setTimeout(resolve, 1500))
+          await new Promise(resolve => setTimeout(resolve, 500))
 
           setFirstName('') // Clear form fields on success
           setEmail('')
