@@ -97,8 +97,7 @@ export default function Home() {
             and building a great company.  As an entrepreneur, I&apos;ve helped lead companies through 
             major shifts, from old-school software to SaaS, cloud, and mobile. Today, I couldn&apos;t be 
             more excited to back the next generation of founders who are re-shaping software and infrastructure 
-            in the AI era.  If you&apos;re building something bold at the pre-seed stage, 
-            I&apos;d love to hear from you.
+            in the AI era.
           </div>
         </div>
       </div>
