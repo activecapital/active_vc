@@ -3,7 +3,6 @@ import { faintBorder, hoverDimmed } from "../src/cssClasses"
 
 import Image from "next/image"
 import Link from "next/link"
-
 import { Poppins } from 'next/font/google'
 
 const fontPoppins = Poppins({
@@ -12,10 +11,6 @@ const fontPoppins = Poppins({
 })
 
 const Team = () => {
-
-  const teamContainerStyles = `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 
-    gap-8 sm:gap-4 xl:gap-8`
-
   const memberCardStyles = `px-8 py-8 relative flex flex-col w-full
     ${faintBorder} rounded-[24px]`
 
@@ -33,87 +28,68 @@ const Team = () => {
     track('Team Member clicked', { fullname, url })
   }
 
-  const profileUrls = {
-    'pat_matthews': 'https://patmatthews.com',
-    'cat_dizon': 'https://www.linkedin.com/in/cat-dizon-43ab858/',
-    'chris_saum': 'https://www.linkedin.com/in/chris-saum-84938047/',
-    'avery_keller': 'https://www.linkedin.com/in/averykellermeyer/'
-  }
+  const teamMembers = [
+    {
+      fullname: "Pat Matthews",
+      title: "Founder & CEO",
+      img: "/img/photos/pat-matthews.png",
+      url: "https://patmatthews.com"
+    },
+    {
+      fullname: "Cat Dizon",
+      title: "Co-Founder & Partner",
+      img: "/img/photos/cat-dizon.png",
+      url: "https://www.linkedin.com/in/cat-dizon-43ab858/"
+    },
+    {
+      fullname: "Chris Saum",
+      title: "Investment Partner",
+      img: "/img/photos/chris-saum.png",
+      url: "https://www.linkedin.com/in/chris-saum-84938047/"
+    },
+    {
+      fullname: "Avery Keller",
+      title: "Executive Admin",
+      img: "/img/photos/avery-keller.png",
+      url: "https://www.linkedin.com/in/averykellermeyer/"
+    },
+    {
+      fullname: "Kevin Minnick",
+      title: "Technical Advisor",
+      img: "/img/photos/kevin-minnick.png",
+      url: "https://www.linkedin.com/in/kevinminnick/"
+    }
+  ]
 
-  return <div className={teamContainerStyles}>
-
-    {/* Pat Matthews */}
-    <Link href={profileUrls.pat_matthews} target="_blank"
-      onClick={() => { profileClicked('Pat Matthews', profileUrls.pat_matthews) }}>
-      <div className={memberCardStyles}>
-        <div className="flex justify-center items-center mb-4">
-          <div className={`relative w-screen`}>
-            <Image src={`/img/photos/pat-matthews.png`} width={532} height={544} alt="Pat Matthews" className={memberImageStyles} />
+  return (
+    <div className="flex flex-wrap justify-center gap-8 sm:gap-4 xl:gap-6">
+      {teamMembers.map(({ fullname, title, img, url }) => (
+        <Link
+          key={fullname}
+          href={url}
+          target="_blank"
+          onClick={() => profileClicked(fullname, url)}
+          className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1rem)] max-w-[360px]"
+        >
+          <div className={memberCardStyles}>
+            <div className="flex justify-center items-center mb-4">
+              <div className="relative w-screen">
+                <Image
+                  src={img}
+                  width={532}
+                  height={544}
+                  alt={fullname}
+                  className={memberImageStyles}
+                />
+              </div>
+            </div>
+            <div className={fullnameStyles}>{fullname}</div>
+            <div className={titleStyles}>{title}</div>
           </div>
-        </div>
-
-        <div className={fullnameStyles}>
-          Pat Matthews
-        </div>
-
-        <div className={titleStyles}>Founder &amp; CEO</div>
-      </div>
-    </Link>
-
-    {/* Cat Dizon */}
-    <Link href={profileUrls.cat_dizon} target="_blank"
-      onClick={() => { profileClicked('Cat Dizon', profileUrls.cat_dizon) }}>
-      <div className={memberCardStyles}>
-        <div className="flex justify-center items-center mb-4">
-          <div className={`relative w-screen`}>
-            <Image src={`/img/photos/cat-dizon.png`} width={532} height={544} alt="Cat Dizon" className={memberImageStyles} />
-          </div>
-        </div>
-
-        <div className={`${fullnameStyles}`}>
-          Cat Dizon
-        </div>
-
-        <div className={titleStyles}>Co-Founder &amp; Partner</div>
-      </div>
-    </Link>
-
-    {/* Chris Saum */}
-    <Link href={profileUrls.chris_saum} target="_blank"
-      onClick={() => { profileClicked('Chris Saum', profileUrls.chris_saum) }}>
-      <div className={memberCardStyles}>
-        <div className="flex justify-center items-center mb-4">
-          <div className={`relative w-screen`}>
-            <Image src={`/img/photos/chris-saum.png`} width={532} height={544} alt="Chris Saum" className={memberImageStyles} />
-          </div>
-        </div>
-
-        <div className={fullnameStyles}>
-          Chris Saum
-        </div>
-
-        <div className={titleStyles}>Investment Partner</div>
-      </div>
-    </Link>
-
-    {/* Avery Keller */}
-    <Link href={profileUrls.avery_keller} target="_blank"
-      onClick={() => { profileClicked('Avery Keller', profileUrls.avery_keller) }}>
-      <div className={memberCardStyles}>
-        <div className="flex justify-center items-center mb-4">
-          <div className={`relative w-screen`}>
-            <Image src={`/img/photos/avery-keller.png`} width={532} height={544} alt="Avery Keller" className={memberImageStyles} />
-          </div>
-        </div>
-
-        <div className={fullnameStyles}>
-          Avery Keller
-        </div>
-
-        <div className={titleStyles}>Executive Admin</div>
-      </div>
-    </Link>
-  </div >
+        </Link>
+      ))}
+    </div>
+  )
 }
 
 export default Team
