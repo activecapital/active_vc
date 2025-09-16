@@ -18,12 +18,9 @@ const TopHeroCard = () => {
     <h1 className={`${fontLexendDeca.className} text-white
       text-[34px] sm:text-[48px] md:text-[56px] 
       leading-[42px] sm:leading-[56px] md:leading-[74px]`}>
-      <div className='hidden md:block'>Founder led capital for</div>
-      <div className='md:hidden'>Founder led capital</div>
-
-      <div className='hidden md:block'>founder led companies</div>
-      <div className='md:hidden'>for founder led companies</div>
-    </h1>
+  <span className="hidden md:inline">Founder Led Capital For<br />Founder Led Companies</span>
+  <span className="md:hidden">Founder Led Capital For Founder Led Companies</span>
+</h1>
 
     <div className="
       mt-4

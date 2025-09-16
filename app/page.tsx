@@ -89,21 +89,16 @@ export default function Home() {
         </div>
         <div className={`${aboutMsgTextContainer}`}>
           <div>
-            Hi, I&apos;m Pat, an entrepreneur turned investor, and the founder of Active Capital.  
-            Over the past 20+ years, I&apos;ve started, scaled, and invested in dozens of enterprise 
-            software and cloud infrastructure companies—often in cities outside the usual tech hubs.  
-            I launched Active Capital because I believe founders deserve early capital from someone 
-            who&apos;s walked in their shoes. Someone who truly understands the challenges of starting 
-            and building a great company.  As an entrepreneur, I&apos;ve helped lead companies through 
-            major shifts, from old-school software to SaaS, cloud, and mobile. Today, I couldn&apos;t be 
-            more excited to back the next generation of founders who are re-shaping software and infrastructure 
-            in the AI era.
+            Hi, I&apos;m Pat.  I&apos;m an entrepreneur turned investor. I&apos;ve spent my entire career starting, 
+            scaling, and investing in startups.  I started Active Capital because I love investing in ambitious founders 
+            and doing my best to help them reach their potential. I&apos;ve been working in enterprise software and cloud 
+            infrastructure for 20+ years, and I believe the future is brighter than ever.  If you&apos;re a pre-seed company building the future of enterprise software, we&apos;d love to connect. I welcome warm intros and cold emails!
           </div>
         </div>
       </div>
 
       <h2 className={`${sectionHeadingStyles}`}>About</h2>
-      <div className={`${subHeadingStyles}`}>We live in Texas and invest all over the country.</div>
+      <div className={`${subHeadingStyles}`}>Backing ambitious, technical founders across &apos;</div>
 
       {/* About Active Capital */}
       <div className={`grid grid-cols-12
@@ -112,18 +107,23 @@ export default function Home() {
           <Image src="/img/active-capital-icon.svg" width={180} height={180} alt="Active Capital Icon" className={`${aboutImgStyles}`} />
         </div>
         <div className={aboutMsgTextContainer}>
-        Active Capital is a venture firm focused on pre-seed investing in the future of 
-        enterprise software &amp; cloud infrastructure. We back ambitious, technical founders, 
-        often in underdog cities across America, who are building software &amp; AI products to solve 
-        real business problems. We invest $100k to $1M in small pre-seed rounds and reserve capital 
-        to write bigger checks in future rounds.
+        Active Capital is a venture firm focused on pre-seed investing in the future of enterprise software.  We back ambitious, technical founders solving real business problems with software and AI. We love working with founders who stay small and scrappy until they find true product-market fit.  We typically invest $100K to $1M, with the ability to invest significantly more as companies grow and our relationship develops. We like to invest early and prefer to be a meaningful part of the first capital raised.
         </div>
       </div>
+
+      {/* Newsletter */}
+      <h2 className={`${sectionHeadingStyles}`}>Newsletter</h2>
+
+      <div className={`${subHeadingStyles}`}>
+        Sign up to stay informed.
+      </div>
+
+      <Newsletter />
 
       {/* Portfolio */}
       <h2 className={`${sectionHeadingStyles}`}>Portfolio</h2>
 
-      <div className={`${subHeadingStyles}`}>Check out some of the amazing companies we&apos;ve invested in.</div>
+      <div className={`${subHeadingStyles}`}>Check out a few of the companies we&apos;ve backed</div>
 
       <Portfolio />
 
@@ -140,7 +140,7 @@ export default function Home() {
       <h2 className={`${sectionHeadingStyles}`}>Team</h2>
 
       <div className={`${subHeadingStyles}`}>
-        We&apos;ve been starting, building, and investing in software startups for 20+ years.
+        We&apos;ve been starting, building, and investing together for 20+ years.
       </div>
 
       <Team />
@@ -149,25 +149,20 @@ export default function Home() {
       <h2 className={`${sectionHeadingStyles}`}>Advisors</h2>
 
       <div className={`${subHeadingStyles}`}>
-        We met at Rackspace and have been working together ever since.
+        We met at Rackspace 20 years ago and have been working together ever since.
       </div>
 
       <Advisors />
-
-      {/* Newsletter */}
-      <h2 className={`${sectionHeadingStyles}`}>Newsletter</h2>
-
-      <div className={`${subHeadingStyles}`}>
-        Sign up to stay informed.
-      </div>
-
-      <Newsletter />
 
       {/* Contact */}
       <h2 className={`${sectionHeadingStyles}`}>Contact</h2>
 
       <div className={`${subHeadingStyles}`}>
-        If you&apos;re building something bold at the pre-seed stage, we&apos;d love to hear from you.
+        If you&apos;re a founder building the future of enterprise, please email:&nbsp;
+        <Link
+        href={`#`}
+        onClick={handleContactEmailClicked}
+        className="text-white hover:underline">{teamContactEmail}</Link>
       </div>
 
       <Contact />
