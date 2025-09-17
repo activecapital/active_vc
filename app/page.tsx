@@ -51,6 +51,7 @@ export default function Home() {
     md:pl-0
     pb-4 md:py-8 md:pr-8 
     lg:py-8 lg:pr-8
+    text-justify
     `
     
   const teamContactEmail = process.env.NEXT_PUBLIC_TEAM_CONTACT_EMAIL || ""
@@ -88,17 +89,15 @@ export default function Home() {
           </Link>
         </div>
         <div className={`${aboutMsgTextContainer}`}>
-          <div>
-            Hi, I&apos;m Pat.  I&apos;m an entrepreneur turned investor. I&apos;ve spent my entire career starting, 
-            scaling, and investing in startups.  I started Active Capital because I love investing in ambitious founders 
-            and doing my best to help them reach their potential. I&apos;ve been working in enterprise software and cloud 
-            infrastructure for 20+ years, and I believe the future is brighter than ever.  If you&apos;re a pre-seed company building the future of enterprise software, we&apos;d love to connect. I welcome warm intros and cold emails!
-          </div>
+          Hi, I&apos;m Pat.  I&apos;m an entrepreneur turned investor. I&apos;ve spent my entire career starting, 
+          scaling, and investing in startups.  I started Active Capital because I love investing in ambitious founders 
+          and doing my best to help them reach their potential. I&apos;ve been working in enterprise software and cloud 
+          infrastructure for 20+ years, and I believe the future is brighter than ever.  If you&apos;re a pre-seed company building the future of enterprise software, we&apos;d love to connect. I welcome warm intros and cold emails!
         </div>
       </div>
 
       <h2 className={`${sectionHeadingStyles}`}>About</h2>
-      <div className={`${subHeadingStyles}`}>Backing ambitious, technical founders across &apos;</div>
+      <div className={`${subHeadingStyles}`}>Backing ambitious, technical founders across America.</div>
 
       {/* About Active Capital */}
       <div className={`grid grid-cols-12
@@ -123,7 +122,7 @@ export default function Home() {
       {/* Portfolio */}
       <h2 className={`${sectionHeadingStyles}`}>Portfolio</h2>
 
-      <div className={`${subHeadingStyles}`}>Check out a few of the companies we&apos;ve backed</div>
+      <div className={`${subHeadingStyles}`}>Check out a few of the companies we&apos;ve backed.</div>
 
       <Portfolio />
 
@@ -149,23 +148,27 @@ export default function Home() {
       <h2 className={`${sectionHeadingStyles}`}>Advisors</h2>
 
       <div className={`${subHeadingStyles}`}>
-        We met at Rackspace 20 years ago and have been working together ever since.
+        We met at Rackspace 20+ years ago and have been working together ever since.
       </div>
 
       <Advisors />
 
       {/* Contact */}
-      <h2 className={`${sectionHeadingStyles}`}>Contact</h2>
+      <h2 className={`${sectionHeadingStyles}`}>Contact Us</h2>
 
-      <div className={`${subHeadingStyles}`}>
-        If you&apos;re a founder building the future of enterprise, please email:&nbsp;
-        <Link
-        href={`#`}
-        onClick={handleContactEmailClicked}
-        className="text-white hover:underline">{teamContactEmail}</Link>
+      <div className={`${subHeadingStyles} mt-6`}>
+        <p>
+          If you&apos;re a founder building the future of enterprise, please email:&nbsp;
+          <Link
+          href={`#`}
+          onClick={handleContactEmailClicked}
+          className="text-white hover:underline">{teamContactEmail}</Link>
+        </p>
+
+        <p>
+          Please include your deck, memo or anything else we can read to learn more quickly.
+        </p>
       </div>
-
-      <Contact />
     </main >
   )
 }

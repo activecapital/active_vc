@@ -1,51 +1,76 @@
-import { track } from '@vercel/analytics'
-import { faintBorder, hoverDimmed } from "../src/cssClasses"
+// Team.tsx
+import { track } from '@vercel/analytics';
+import { faintBorder, hoverDimmed } from "../src/cssClasses";
 
-import Image from "next/image"
-import Link from "next/link"
-import { Poppins } from 'next/font/google'
+import Image from "next/image";
+import Link from "next/link";
+import { Poppins } from 'next/font/google';
+import React from 'react';
 
 const fontPoppins = Poppins({
   weight: ['400', '600'],
   subsets: ['latin']
-})
+});
 
-const handleContactEmailClicked = (e: React.MouseEvent<HTMLElement>,  contactEmail: string) => {
-  e.preventDefault()
-  track('Contact Link clicked', { url: contactEmail })
+const handleContactEmailClicked = (e: React.MouseEvent<HTMLElement>, contactEmail: string) => {
+  e.preventDefault();
+  track('Contact Link clicked', { url: contactEmail });
 
   navigator.clipboard.writeText(contactEmail)
     .then(() => {
-      // Optional: Display a message or perform an action after copying
       alert(`Email ${contactEmail} copied to clipboard.`);
     })
     .catch((err) => {
-      // Handle any errors
       console.error('Error copying email to clipboard:', err);
     });
-}
+};
 
 const contactLinkClicked = (url: string) => {
-  track('Contact Link clicked', { url })
+  track('Contact Link clicked', { url });
+};
+
+// Reusable ContactLink component
+interface ContactLinkProps {
+  type: "Email" | "LinkedIn" | "Twitter";
+  link: string;
 }
 
+const ContactLink: React.FC<ContactLinkProps> = ({ type, link }) => {
+  const isEmail = type === "Email";
+  const iconSrc = isEmail ? "/img/icons/mail.svg" : type === "LinkedIn" ? "/img/icons/linkedin.svg" : "/img/icons/twitter-x.svg";
+  const altText = `${type} Icon`;
+
+  const handleClick = (e: React.MouseEvent<HTMLElement>) => {
+    if (isEmail) {
+      handleContactEmailClicked(e, link);
+    } else {
+      contactLinkClicked(link);
+    }
+  };
+
+  return (
+    <Link
+      href={isEmail ? '#' : link}
+      target={isEmail ? '_self' : '_blank'}
+      onClick={handleClick}
+    >
+      <div className="relative w-[24px] h-[24px]">
+        <Image
+          fill={true}
+          src={iconSrc}
+          className="w-auto h-auto mt-[2px]"
+          alt={altText}
+        />
+      </div>
+    </Link>
+  );
+};
+
 const Team = () => {
-  const memberCardStyles = `px-8 py-8 relative flex flex-col w-full
-    ${faintBorder} rounded-[24px]`
-
-  const memberImageStyles = `rounded-full max-w-[124px] max-h-[124px] lg:max-w-[144px] lg:max-h-[144px] mx-auto`
-
-  const fullnameStyles = `text-center
-    text-white hover:opacity-75 whitespace-nowrap overflow-hidden
-    ${fontPoppins.className}
-    ${hoverDimmed}
-    mt-6`
-
-  const titleStyles = `text-center text-[16px] leading-6`
-
-  const profileClicked = (fullname: string, url: string) => {
-    track('Team Member clicked', { fullname, url })
-  }
+  const memberCardStyles = `px-8 py-8 relative flex flex-col w-full ${faintBorder} rounded-[24px]`;
+  const memberImageStyles = `rounded-full max-w-[124px] max-h-[124px] lg:max-w-[144px] lg:max-h-[144px] mx-auto`;
+  const fullnameStyles = `text-center text-white hover:opacity-75 whitespace-nowrap overflow-hidden ${fontPoppins.className} ${hoverDimmed} mt-6`;
+  const titleStyles = `text-center text-[16px] leading-6`;
 
   const teamMembers = [
     {
@@ -58,15 +83,6 @@ const Team = () => {
       twitter: "https://x.com/patmatthews",
     },
     {
-      fullname: "Cat Dizon",
-      title: "Co-Founder & Partner",
-      img: "/img/photos/cat-dizon.png",
-      url: "https://www.linkedin.com/in/cat-dizon-43ab858/",
-      email: "cat@active.vc",
-      linkedin: "https://www.linkedin.com/in/cat-dizon-43ab858/",
-      twitter: "https://x.com/CatDizonTx",
-    },
-    {
       fullname: "Chris Saum",
       title: "Investment Partner",
       img: "/img/photos/chris-saum.png",
@@ -76,28 +92,37 @@ const Team = () => {
       twitter: "https://x.com/christophersaum",
     },
     {
+      fullname: "Cat Dizon",
+      title: "Co-Founder & Partner",
+      img: "/img/photos/cat-dizon.png",
+      url: "https://www.linkedin.com/in/cat-dizon-43ab858/",
+      email: "cat@active.vc",
+      linkedin: "https://www.linkedin.com/in/cat-dizon-43ab858/",
+      twitter: "https://x.com/CatDizonTx",
+    },
+    {
       fullname: "Avery Keller",
       title: "Executive Admin",
       img: "/img/photos/avery-keller.png",
       url: "https://www.linkedin.com/in/averykellermeyer/",
-      email: "avery@active.vc",
-      linkedin: "https://www.linkedin.com/in/averykellermeyer/",
-      twitter: "https://x.com/activecapitalvc",
+      email: "",
+      linkedin: "",
+      twitter: "",
     },
     {
       fullname: "Kevin Minnick",
       title: "Technical Advisor",
       img: "/img/photos/kevin-minnick.png",
       url: "https://www.linkedin.com/in/kevinminnick/",
-      email: "kevin@active.vc",
-      linkedin: "https://www.linkedin.com/in/kevinminnick/",
-      twitter: "https://x.com/activecapitalvc",
+      email: "",
+      linkedin: "",
+      twitter: "",
     }
-  ]
+  ];
 
   return (
     <div className="flex flex-wrap justify-center gap-8 sm:gap-4 xl:gap-6">
-      {teamMembers.map(({ fullname, title, img, url, email, linkedin, twitter }) => (
+      {teamMembers.map(({ fullname, title, img, email, linkedin, twitter }) => (
         <div
           key={fullname}
           className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1rem)] max-w-[360px]"
@@ -116,57 +141,17 @@ const Team = () => {
             </div>
             <div className={fullnameStyles}>{fullname}</div>
             <div className={titleStyles}>{title}</div>
-            
-            {/* Contact Links */}
-            <div className="flex flex-col lg:flex-row mt-2 mx-auto px-0 gap-5">
-              <Link href={`#`} onClick={(e) => handleContactEmailClicked(e, email)}>
-                <div className="relative w-[24px] h-[24px]">
-                  <Image
-                    fill={true}
-                    src="/img/icons/mail.svg"
-                    className="w-auto h-auto mt-[2px]"
-                    alt="Mail Icon"
-                  />
-                </div>
-              </Link>
-              <Link
-                href={twitter}
-                target="_blank"
-                onClick={() => {
-                  contactLinkClicked(twitter);
-                }}
-              >
-                <div className="relative w-[24px] h-[24px]">
-                  <Image
-                    fill={true}
-                    src="/img/icons/twitter-x.svg"
-                    className="w-auto h-auto mt-[2px]"
-                    alt="Twitter X Icon"
-                  />
-                </div>
-              </Link>
-              <Link
-                href={linkedin}
-                target="_blank"
-                onClick={() => {
-                  contactLinkClicked(linkedin);
-                }}
-              >
-                <div className="relative w-[24px] h-[24px]">
-                  <Image
-                    fill={true}
-                    src="/img/icons/linkedin.svg"
-                    className="w-auto h-auto"
-                    alt="LinkedIn Icon"
-                  />
-                </div>
-              </Link>
+
+            <div className="flex flex-row mt-2 mx-auto px-0 gap-5">
+              {email && <ContactLink type="Email" link={email} />}
+              {linkedin && <ContactLink type="LinkedIn" link={linkedin} />}
+              {twitter && <ContactLink type="Twitter" link={twitter} />}
             </div>
           </div>
         </div>
       ))}
     </div>
-  )
-}
+  );
+};
 
-export default Team
+export default Team;
