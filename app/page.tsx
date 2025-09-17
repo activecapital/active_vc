@@ -165,7 +165,7 @@ export default function Home() {
           className="text-white hover:underline">{teamContactEmail}</Link>
         </p>
 
-        <p>
+        <p className='mt-4'>
           Please include your deck, memo or anything else we can read to learn more quickly.
         </p>
       </div>
