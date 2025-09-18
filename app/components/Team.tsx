@@ -69,7 +69,7 @@ const ContactLink: React.FC<ContactLinkProps> = ({ type, link }) => {
 const Team = () => {
   const memberCardStyles = `px-8 py-8 relative flex flex-col w-full ${faintBorder} rounded-[24px] h-[320px]`;
   const memberImageStyles = `rounded-full max-w-[124px] max-h-[124px] lg:max-w-[144px] lg:max-h-[144px] mx-auto`;
-  const fullnameStyles = `text-center text-white hover:opacity-75 whitespace-nowrap overflow-hidden ${fontPoppins.className} ${hoverDimmed} mt-6`;
+  const fullnameStyles = `text-center text-white hover:opacity-75 whitespace-nowrap overflow-hidden ${fontPoppins.className} ${hoverDimmed}`;
   const titleStyles = `text-center text-[16px] leading-6`;
 
   const teamMembers = [
