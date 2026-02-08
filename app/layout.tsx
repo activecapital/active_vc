@@ -1,3 +1,4 @@
+import { GoogleTagManager } from '@next/third-parties/google'
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from '@vercel/analytics/react'
 
@@ -39,6 +40,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <title>Active Capital</title>
+        <GoogleTagManager gtmId="GTM-WLF2BJCJ" />
       </head>
       <body className="bg-white ease-in 
         text-[16px] md:text-[18px] overscroll-x-none">
