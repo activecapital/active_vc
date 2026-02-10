@@ -84,7 +84,7 @@ const Team = () => {
     },
     {
       fullname: "Cat Dizon",
-      title: "Co-Founder & Partner",
+      title: "Co-founder & CFO",
       img: "/img/photos/cat-dizon.png",
       url: "https://www.linkedin.com/in/cat-dizon-43ab858/",
       email: "cat@active.vc",
@@ -93,7 +93,7 @@ const Team = () => {
     },
     {
       fullname: "Chris Saum",
-      title: "Investment Partner",
+      title: "Partner & Investor",
       img: "/img/photos/chris-saum.png",
       url: "https://www.linkedin.com/in/chris-saum-84938047/",
       email: "chris@active.vc",
@@ -114,6 +114,15 @@ const Team = () => {
       title: "Technical Advisor",
       img: "/img/photos/kevin-minnick.png",
       url: "https://www.linkedin.com/in/kevinminnick/",
+      email: "",
+      linkedin: "",
+      twitter: "",
+    },
+    {
+      fullname: "Bethany Stachenfeld",
+      title: "Entrepreneur In Residence",
+      img: "/img/photos/bethany-stachenfeld.png",
+      url: "linkedin.com/in/bethany-stachenfeld",
       email: "",
       linkedin: "",
       twitter: "",

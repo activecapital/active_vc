@@ -7,6 +7,24 @@ export interface TestimonialInfo {
 
 export const testimonials = [
   {
+    fullname: "Fynn Glover",
+    title: "Co-founder & CEO of Schematic",
+    avatarSrc: "/img/photos/fynn-glover.png",
+    url: "https://www.linkedin.com/in/fynn-glover-b0410015",
+    text: `Pat is my first call with good news, bad news, or hard decisions I need help 
+    thinking through. He's an exceptionally founder-focused investor. He's been a founder 
+    and an operator. He's the type of investor and person I'd want on any cap table, and I'd highly 
+    recommend him to any founder.`,
+  },
+  {
+    fullname: "Ashley Rose",
+    title: "CEO of Living Security",
+    avatarSrc: "/img/photos/ashley-rose.png",
+    url: "https://www.linkedin.com/in/ashley-m-rose/",
+    text: `Pat shows up like someone who's built before, not just invested before. He'll challenge a narrative, 
+    pressure-test assumptions, and help tighten the plan without draining momentum. The operator lens is real.`,
+  },
+  {
     fullname: "Chris Cochran",
     title: "Founder of ProsperOps",
     avatarSrc: "/img/photos/chris-cochran.png",
@@ -17,21 +35,12 @@ export const testimonials = [
   },
   {
     fullname: "Bethany Stachenfeld",
-    title: "Founder of SendSpark",
+    title: "Founder of Sendspark",
     avatarSrc: "/img/photos/bethany-stachenfeld.png",
     url: "https://www.linkedin.com/in/bethany-stachenfeld/",
     text: `Pat is the first person you want to share news with, good or bad. 
       He's the perfect blend of coach, problem solver, cheerleader, and introduction 
       machine that every founder looks for in an investor.`,
-  },
-  {
-    fullname: "Rick Barkley",
-    title: "Founder of Cloudsnap",
-    avatarSrc: "/img/photos/rick-barkley.png",
-    url: "https://www.linkedin.com/in/rick-barkley-8839b87/",
-    text: `I kind of feel like I hit the VC funding jackpot. Not only was getting that 
-      initial check relatively painless, I could not have been happier to have Pat and 
-      Active Capital as our financial partners.`,
   },
   {
     fullname: "Rami Essad",
