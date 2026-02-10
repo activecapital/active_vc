@@ -118,13 +118,6 @@ export const PortfolioCompanies = [
     height: defaultHeight,
   },
   {
-    companyName: 'Founderpath',
-    src: '/img/logos/founderpath.svg',
-    website: 'https://founderpath.com/',
-    width: defaultWidth,
-    height: defaultHeight,
-  },
-  {
     companyName: 'Antim Labs',
     src: '/img/logos/antim-labs.svg',
     website: 'https://www.antimlabs.com/',
@@ -231,6 +224,13 @@ export const PortfolioCompanies = [
     companyName: 'Fetchdesk',
     src: '/img/logos/fetchdesk.svg',
     website: 'https://www.fetchdeskai.com/',
+    width: defaultWidth,
+    height: defaultHeight,
+  },
+  {
+    companyName: 'Founderpath',
+    src: '/img/logos/founderpath.svg',
+    website: 'https://founderpath.com/',
     width: defaultWidth,
     height: defaultHeight,
   },
