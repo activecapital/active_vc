@@ -243,12 +243,11 @@ export const PortfolioCompanies = [
     acquiredBy: 'Medallia',
   },
   {
-    companyName: 'Chartio',
-    src: '/img/logos/chartio.svg',
-    website: 'https://www.chartio.com/',
+    companyName: 'StaffAI',
+    src: '/img/logos/staff-ai.svg',
+    website: 'https://staffai.so/',
     width: defaultWidth,
     height: defaultHeight,
-    acquiredBy: 'Atlassian',
   },
   {
     companyName: 'Dimension labs',
@@ -416,10 +415,11 @@ export const PortfolioCompanies = [
     height: defaultHeight,
   },
   {
-    companyName: 'StaffAI',
-    src: '/img/logos/staff-ai.svg',
-    website: 'https://staffai.so/',
+    companyName: 'Chartio',
+    src: '/img/logos/chartio.svg',
+    website: 'https://www.chartio.com/',
     width: defaultWidth,
     height: defaultHeight,
+    acquiredBy: 'Atlassian',
   },
 ]
