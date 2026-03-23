@@ -18,8 +18,8 @@ const TopHeroCard = () => {
     <h1 className={`${fontLexendDeca.className} text-white
       text-[34px] sm:text-[48px] md:text-[56px] 
       leading-[42px] sm:leading-[56px] md:leading-[74px]`}>
-  <span className="hidden md:inline">Founder Led Capital For<br />Founder Led Companies</span>
-  <span className="md:hidden">Founder Led Capital For Founder Led Companies</span>
+  <span className="hidden md:inline">Founder Led Capital for<br />Founder Led Companies</span>
+  <span className="md:hidden">Founder Led Capital for Founder Led Companies</span>
 </h1>
 
     <div className="
@@ -29,10 +29,10 @@ const TopHeroCard = () => {
       md:text-[20px]
       leading-[24px] tracking-wide">
       {/* mobile screens */}
-      <div className='md:hidden'>Pre-Seed Investing in the</div>
-      <div className='md:hidden'>Future of Enterprise Software</div>
+      <div className='md:hidden'>Pre-Seed Investing | Technical Founders | </div>
+      <div className='md:hidden'>AI-Native Business Software</div>
       {/* large screens */}
-      <div className='hidden md:block'>Pre-Seed Investing in the Future of Enterprise Software
+      <div className='hidden md:block'>Pre-Seed Investing | Technical Founders | AI-Native Business Software
       </div>
     </div>
   </div>)

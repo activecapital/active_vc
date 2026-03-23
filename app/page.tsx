@@ -89,10 +89,11 @@ export default function Home() {
           </Link>
         </div>
         <div className={`${aboutMsgTextContainer}`}>
-          Hi, I&apos;m Pat.  I&apos;m an entrepreneur turned investor. I&apos;ve spent my entire career starting, 
-          scaling, and investing in startups.  I started Active Capital because I love investing in ambitious founders 
-          and doing my best to help them reach their potential. I&apos;ve been working in enterprise software and cloud 
-          infrastructure for 20+ years, and I believe the future is brighter than ever.  If you&apos;re a pre-seed company building the future of enterprise software, we&apos;d love to connect. I welcome warm intros and cold emails!
+          Hi, I&apos;m Pat. I&apos;m an entrepreneur xturned investor. I&apos;ve spent my career starting, scaling, and 
+          investing in startups. I started Active Capital because I love backing technical founders and 
+          helping them reach their potential. I&apos;ve spent more than 20 years building and investing in software, 
+          cloud infrastructure, and AI, and I believe the future is brighter than ever. If you&apos;re a founder 
+          building an AI-native company, I&apos;d love to hear from you. I welcome warm intros and cold emails.
         </div>
       </div>
 
@@ -106,7 +107,11 @@ export default function Home() {
           <Image src="/img/active-capital-icon.svg" width={180} height={180} alt="Active Capital Icon" className={`${aboutImgStyles}`} />
         </div>
         <div className={aboutMsgTextContainer}>
-        Active Capital is a venture firm focused on pre-seed investing in the future of enterprise software.  We back ambitious, technical founders solving real business problems with software and AI. We love working with founders who stay small and scrappy until they find true product-market fit.  We typically invest $100K to $1M, with the ability to invest significantly more as companies grow and our relationship develops. We like to invest early and prefer to be a meaningful part of the first capital raised.
+        Active Capital is a venture firm focused on pre-seed investing in technical founders building AI-native software, 
+        infrastructure, and products that solve real business problems. We love working with founders who stay small and 
+        scrappy until they find true product-market fit. We typically invest $100K to $1M, with the ability to invest 
+        significantly more as companies grow and our relationship develops. We like to invest early and be a meaningful 
+        part of the first capital raised.
         </div>
       </div>
 
