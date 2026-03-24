@@ -89,7 +89,7 @@ export default function Home() {
           </Link>
         </div>
         <div className={`${aboutMsgTextContainer}`}>
-          Hi, I&apos;m Pat. I&apos;m an entrepreneur xturned investor. I&apos;ve spent my career starting, scaling, and 
+          Hi, I&apos;m Pat. I&apos;m an entrepreneur turned investor. I&apos;ve spent my career starting, scaling, and 
           investing in startups. I started Active Capital because I love backing technical founders and 
           helping them reach their potential. I&apos;ve spent more than 20 years building and investing in software, 
           cloud infrastructure, and AI, and I believe the future is brighter than ever. If you&apos;re a founder 
