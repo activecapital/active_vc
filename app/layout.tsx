@@ -19,10 +19,10 @@ const fontNoticiaText = Noticia_Text({
 
 export const metadata: Metadata = {
   title: "Active Capital",
-  description: "Founder led capital for founder led companies. Pre-Seed Investing | Technical Founders | AI-Native Business Software.",
+  description: "Founder led capital for founder led companies. Pre-Seed Investing in AI-Native Business Software",
   openGraph: {
     title: "Active Capital",
-    description: "Founder led capital for founder led companies. Pre-Seed Investing | Technical Founders | AI-Native Business Software.",
+    description: "Founder led capital for founder led companies. Pre-Seed Investing in AI-Native Business Software",
     images: [{
       url: "https://activecapital.com/img/active-capital-icon.svg",
       alt: "Photo of the Active Capital Logo",

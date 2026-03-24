@@ -25,14 +25,14 @@ const TopHeroCard = () => {
     <div className="
       mt-4
       text-gray
-      text-[14px]
-      md:text-[20px]
+      text-[18px]
+      md:text-[24px]
       leading-[24px] tracking-wide">
       {/* mobile screens */}
-      <div className='md:hidden'>Pre-Seed Investing | Technical Founders | </div>
+      <div className='md:hidden'>Pre-Seed Investing in</div>
       <div className='md:hidden'>AI-Native Business Software</div>
       {/* large screens */}
-      <div className='hidden md:block'>Pre-Seed Investing | Technical Founders | AI-Native Business Software
+      <div className='hidden md:block'>Pre-Seed Investing in AI-Native Business Software
       </div>
     </div>
   </div>)
