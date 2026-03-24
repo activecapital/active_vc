@@ -98,7 +98,7 @@ export default function Home() {
       </div>
 
       <h2 className={`${sectionHeadingStyles}`}>About</h2>
-      <div className={`${subHeadingStyles}`}>Backing ambitious, technical founders across America.</div>
+      <div className={`${subHeadingStyles}`}>Backing technical founders across America.</div>
 
       {/* About Active Capital */}
       <div className={`grid grid-cols-12
