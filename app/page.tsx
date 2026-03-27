@@ -12,6 +12,7 @@ import Team from "./components/Team"
 import Advisors from "./components/Advisors"
 import Contact from "./components/Contact"
 import Newsletter from "./components/Newsletter"
+import HowWeInvest from "./components/HowWeInvest"
 
 
 const fontLexendDeca = Lexend_Deca({
@@ -26,7 +27,7 @@ export default function Home() {
     text-3xl
     md:text-4xl
     text-white
-    mt-12 md:mt-16 lg:mt-32
+    my-12 md:mt-16 lg:mt-32
     ${fontLexendDeca.className}`
 
   const subHeadingStyles = `text-md text-center leading-relaxed
@@ -97,8 +98,11 @@ export default function Home() {
         </div>
       </div>
 
+      <h2 className={`${sectionHeadingStyles}`}>How We Invest</h2>
+
+      <HowWeInvest />
+
       <h2 className={`${sectionHeadingStyles}`}>About</h2>
-      <div className={`${subHeadingStyles}`}>Backing technical founders across America.</div>
 
       {/* About Active Capital */}
       <div className={`grid grid-cols-12
@@ -118,43 +122,25 @@ export default function Home() {
       {/* Newsletter */}
       <h2 className={`${sectionHeadingStyles}`}>Newsletter</h2>
 
-      <div className={`${subHeadingStyles}`}>
-        Sign up to stay informed.
-      </div>
-
       <Newsletter />
 
       {/* Portfolio */}
       <h2 className={`${sectionHeadingStyles}`}>Portfolio</h2>
-
-      <div className={`${subHeadingStyles}`}>Check out a few of the companies we&apos;ve backed.</div>
 
       <Portfolio />
 
       {/* Testimonials */}
       <h2 className={`${sectionHeadingStyles}`}>Testimonials</h2>
 
-      <div className={`${subHeadingStyles}`}>
-        Hear from some of the founders &amp; CEOs we work with.
-      </div>
-
       <Testimonials />
 
       {/* Team */}
       <h2 className={`${sectionHeadingStyles}`}>Team</h2>
 
-      <div className={`${subHeadingStyles}`}>
-        We&apos;ve been starting, building, and investing together for 20+ years.
-      </div>
-
       <Team />
 
       {/* Advisors */}
       <h2 className={`${sectionHeadingStyles}`}>Advisors</h2>
-
-      <div className={`${subHeadingStyles}`}>
-        We met at Rackspace 20+ years ago and have been working together ever since.
-      </div>
 
       <Advisors />
 

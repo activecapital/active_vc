@@ -62,6 +62,58 @@ body {
   animation: spin 0.8s linear infinite;
 }
 
+/* How We Invest Grid */
+.hwi-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+.hwi-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 24px;
+  border-color: rgba(255, 255, 255, 0.09);
+}
+.hwi-cell:not(:last-child) {
+  border-bottom: 2px solid rgba(255, 255, 255, 0.09);
+}
+@media (min-width: 640px) {
+  .hwi-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .hwi-cell {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.09);
+  }
+  .hwi-cell:nth-child(5),
+  .hwi-cell:nth-child(6) {
+    border-bottom: none;
+  }
+  .hwi-cell:nth-child(odd) {
+    border-right: 2px solid rgba(255, 255, 255, 0.09);
+  }
+}
+@media (min-width: 768px) {
+  .hwi-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  .hwi-cell {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.09);
+    border-right: none;
+  }
+  .hwi-cell:nth-child(4),
+  .hwi-cell:nth-child(5),
+  .hwi-cell:nth-child(6) {
+    border-bottom: none;
+  }
+  .hwi-cell:nth-child(3n+1),
+  .hwi-cell:nth-child(3n+2) {
+    border-right: 2px solid rgba(255, 255, 255, 0.09);
+  }
+  .hwi-cell:nth-child(3n) {
+    border-right: none;
+  }
+}
+
 /* Override Chrome's autofill background color */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
