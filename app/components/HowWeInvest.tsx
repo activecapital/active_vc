@@ -3,10 +3,10 @@ import { faintBorder } from "../src/cssClasses"
 
 const items = [
   { label: "Pre-Seed Investing", icon: "/img/icons/how_we_invest/Pre-Seed Investing.svg" },
-  { label: "AI-Native Software", icon: "/img/icons/how_we_invest/AI-Native Software.svg" },
+  { label: "Business Software", icon: "/img/icons/how_we_invest/AI-Native Software.svg" },
   { label: "$100k - $1M Checks", icon: "/img/icons/how_we_invest/100k-1M Checks.svg" },
   { label: "Technical Founders", icon: "/img/icons/how_we_invest/Technical Founders.svg" },
-  { label: "B2B, Infra, Dev Tools", icon: "/img/icons/how_we_invest/B2B, Infra, Dev Tools.png" },
+  { label: "Apps, Agents, Infra", icon: "/img/icons/how_we_invest/B2B, Infra, Dev Tools.png" },
   { label: "Building in the US", icon: "/img/icons/how_we_invest/Buildin in the US.svg" },
 ]
 
@@ -23,7 +23,7 @@ export default function HowWeInvest() {
               alt={item.label}
               className="flex-shrink-0"
             />
-            <span className="ml-[16px] font-bold text-white text-sm whitespace-nowrap">
+            <span className="ml-[16px] text-white text- whitespace-nowrap">
               {item.label}
             </span>
           </div>

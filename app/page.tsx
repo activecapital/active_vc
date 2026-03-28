@@ -98,10 +98,6 @@ export default function Home() {
         </div>
       </div>
 
-      <h2 className={`${sectionHeadingStyles}`}>How We Invest</h2>
-
-      <HowWeInvest />
-
       <h2 className={`${sectionHeadingStyles}`}>About</h2>
 
       {/* About Active Capital */}
@@ -118,6 +114,10 @@ export default function Home() {
         part of the first capital raised.
         </div>
       </div>
+
+      <h2 className={`${sectionHeadingStyles}`}>Approach</h2>
+
+      <HowWeInvest />
 
       {/* Newsletter */}
       <h2 className={`${sectionHeadingStyles}`}>Newsletter</h2>
