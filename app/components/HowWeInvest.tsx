@@ -1,7 +1,8 @@
 import Image from "next/image"
 import { faintBorder } from "../src/cssClasses"
+import type { ApproachItem } from "@/lib/content"
 
-const items = [
+const DEFAULT_ITEMS: ApproachItem[] = [
   { label: "Pre-Seed Investing", icon: "/img/icons/how_we_invest/Pre-Seed Investing.svg" },
   { label: "Business Software", icon: "/img/icons/how_we_invest/AI-Native Software.svg" },
   { label: "$100k - $1M Checks", icon: "/img/icons/how_we_invest/100k-1M Checks.svg" },
@@ -10,11 +11,13 @@ const items = [
   { label: "Building in the US", icon: "/img/icons/how_we_invest/Buildin in the US.svg" },
 ]
 
-export default function HowWeInvest() {
+export default function HowWeInvest({ items }: { items?: ApproachItem[] }) {
+  const displayItems = items && items.length > 0 ? items : DEFAULT_ITEMS
+
   return (
     <div className={`w-full ${faintBorder} rounded-[25px] overflow-hidden`}>
       <div className="hwi-grid">
-        {items.map((item, i) => (
+        {displayItems.map((item, i) => (
           <div key={i} className="hwi-cell">
             <Image
               src={item.icon}

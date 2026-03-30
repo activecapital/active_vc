@@ -161,6 +161,12 @@ export default function AdminPage() {
         <div className="max-w-3xl mx-auto flex justify-between items-center">
           <h1 className="text-xl font-semibold text-white">Active VC Admin</h1>
           <div className="flex gap-3 items-center">
+            <a
+              href="/admin/editor"
+              className="px-4 py-2 bg-zinc-800 border border-zinc-700 text-white rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
+            >
+              Visual Editor
+            </a>
             <button
               onClick={handlePublish}
               disabled={isLoading}

@@ -1,4 +1,5 @@
 'use client'
+import { useState, useEffect } from 'react'
 import { track } from '@vercel/analytics'
 
 import Image from "next/image"
@@ -13,6 +14,7 @@ import Advisors from "./components/Advisors"
 import Contact from "./components/Contact"
 import Newsletter from "./components/Newsletter"
 import HowWeInvest from "./components/HowWeInvest"
+import type { SiteContent } from "@/lib/content"
 
 
 const fontLexendDeca = Lexend_Deca({
@@ -21,6 +23,14 @@ const fontLexendDeca = Lexend_Deca({
 })
 
 export default function Home() {
+  const [content, setContent] = useState<SiteContent | null>(null)
+
+  useEffect(() => {
+    fetch('/api/content')
+      .then(res => res.json())
+      .then(data => setContent(data))
+      .catch(err => console.error('Failed to load content:', err))
+  }, [])
 
   const sectionHeadingStyles = `w-full
     text-center
@@ -77,6 +87,15 @@ export default function Home() {
     track('Pat Avatar clicked')
   }
 
+  const aboutPatText = content?.about_pat ||
+    "Hi, I'm Pat. I'm an entrepreneur turned investor. I've spent my career starting, scaling, and investing in startups. I started Active Capital because I love backing technical founders and helping them reach their potential. I've spent more than 20 years building and investing in software, cloud infrastructure, and AI, and I believe the future is brighter than ever. If you're a founder building an AI-native company, I'd love to hear from you. I welcome warm intros and cold emails."
+
+  const aboutActiveCapitalText = content?.about_active_capital ||
+    "Active Capital is a venture firm focused on pre-seed investing in technical founders building AI-native software, infrastructure, and products that solve real business problems. We love working with founders who stay small and scrappy until they find true product-market fit. We typically invest $100K to $1M, with the ability to invest significantly more as companies grow and our relationship develops. We like to invest early and be a meaningful part of the first capital raised."
+
+  const contactHtml = content?.contact_html ||
+    "<p>If you're a founder building AI-native business software, please email: team@active.vc</p>"
+
   return (
     <main className="flex flex-col items-center justify-between pb-12
       px-4 py-4 md:px-12 lg:px-24 max-w-[1216px] mx-auto">
@@ -90,11 +109,7 @@ export default function Home() {
           </Link>
         </div>
         <div className={`${aboutMsgTextContainer}`}>
-          Hi, I&apos;m Pat. I&apos;m an entrepreneur turned investor. I&apos;ve spent my career starting, scaling, and 
-          investing in startups. I started Active Capital because I love backing technical founders and 
-          helping them reach their potential. I&apos;ve spent more than 20 years building and investing in software, 
-          cloud infrastructure, and AI, and I believe the future is brighter than ever. If you&apos;re a founder 
-          building an AI-native company, I&apos;d love to hear from you. I welcome warm intros and cold emails.
+          {aboutPatText}
         </div>
       </div>
 
@@ -107,17 +122,13 @@ export default function Home() {
           <Image src="/img/active-capital-icon.svg" width={180} height={180} alt="Active Capital Icon" className={`${aboutImgStyles}`} />
         </div>
         <div className={aboutMsgTextContainer}>
-        Active Capital is a venture firm focused on pre-seed investing in technical founders building AI-native software, 
-        infrastructure, and products that solve real business problems. We love working with founders who stay small and 
-        scrappy until they find true product-market fit. We typically invest $100K to $1M, with the ability to invest 
-        significantly more as companies grow and our relationship develops. We like to invest early and be a meaningful 
-        part of the first capital raised.
+          {aboutActiveCapitalText}
         </div>
       </div>
 
       <h2 className={`${sectionHeadingStyles}`}>Approach</h2>
 
-      <HowWeInvest />
+      <HowWeInvest items={content?.approach_items} />
 
       {/* Newsletter */}
       <h2 className={`${sectionHeadingStyles}`}>Newsletter</h2>
@@ -147,11 +158,9 @@ export default function Home() {
       {/* Contact */}
       <h2 className={`${sectionHeadingStyles}`}>Contact Us</h2>
 
-      <div className={`${subHeadingStyles} mt-6`}>
-        <p>
-          If you&apos;re a founder building AI-native business software, please email: team@active.vc
-        </p>
-      </div>
+      <div className={`${subHeadingStyles} mt-6`}
+        dangerouslySetInnerHTML={{ __html: contactHtml }}
+      />
     </main >
   )
 }
