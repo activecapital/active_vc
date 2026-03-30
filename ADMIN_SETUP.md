@@ -53,7 +53,7 @@ git push -u origin staging
 
 ### Conversation Storage
 
-- Conversations are stored as markdown files in `/conversations/`
+- Conversations are stored as markdown files in `/admin_ai_conversations/`
 - Each day gets a new conversation file: `YYYY-MM-DD.md`
 - Files are git-tracked for audit trail
 
@@ -155,7 +155,7 @@ active_vc/
 │           ├── deploy/         # Git deployment
 │           ├── file-edit/      # File read/write
 │           └── publish/        # Staging → Production
-├── conversations/
+├── admin_ai_conversations/
 │   └── YYYY-MM-DD.md          # Daily conversation logs
 ├── lib/
 │   └── git-utils.ts           # Git automation utilities
@@ -165,13 +165,13 @@ active_vc/
 ## Maintenance
 
 ### Viewing Conversation History
-All conversations are stored as markdown in `/conversations/`. Each file represents one day's chat history.
+All conversations are stored as markdown in `/admin_ai_conversations/`. Each file represents one day's chat history.
 
 ### Clearing Old Conversations
 Conversations are git-tracked. To archive:
 ```bash
-mkdir conversations/archive
-git mv conversations/2026-*.md conversations/archive/
+mkdir admin_ai_conversations/archive
+git mv admin_ai_conversations/2026-*.md admin_ai_conversations/archive/
 git commit -m "Archive old conversations"
 ```
 

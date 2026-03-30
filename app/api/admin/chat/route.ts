@@ -3,6 +3,14 @@ import Anthropic from "@anthropic-ai/sdk"
 import fs from "fs/promises"
 import path from "path"
 import { rateLimit, rateLimitConfigs } from "@/lib/rate-limit"
+import {
+  configureGit,
+  createAndCheckoutBranch,
+  getCurrentBranch,
+  commitChanges,
+  pushToRemote,
+  hasUncommittedChanges,
+} from "@/lib/git-utils"
 
 interface Message {
   role: "user" | "assistant" | "system"
@@ -32,7 +40,7 @@ function formatTime(timestamp: string): string {
 }
 
 async function appendToConversation(message: Message) {
-  const conversationsDir = path.join(process.cwd(), "conversations")
+  const conversationsDir = path.join(process.cwd(), "admin_ai_conversations")
   const filename = getTodayFilename()
   const filepath = path.join(conversationsDir, filename)
 
@@ -204,49 +212,37 @@ Be concise and proactive. Make changes confidently when requested.`
 
           try {
             if (toolName === "read_file") {
-              const fileResponse = await fetch(
-                `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/admin/file-edit`,
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    filepath: toolInput.filepath,
-                    operation: "read",
-                  }),
-                }
-              )
-              const data = await fileResponse.json()
-              toolResult = { content: data.content || data.error }
+              const fullPath = path.join(process.cwd(), toolInput.filepath)
+              if (!fullPath.startsWith(process.cwd())) {
+                toolResult = { error: "Invalid file path" }
+              } else {
+                const fileContent = await fs.readFile(fullPath, "utf-8")
+                toolResult = { content: fileContent }
+              }
             } else if (toolName === "write_file") {
-              const fileResponse = await fetch(
-                `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/admin/file-edit`,
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    filepath: toolInput.filepath,
-                    content: toolInput.content,
-                    operation: "write",
-                  }),
-                }
-              )
-              const data = await fileResponse.json()
-              toolResult = { success: data.success, message: data.message || data.error }
+              const fullPath = path.join(process.cwd(), toolInput.filepath)
+              if (!fullPath.startsWith(process.cwd())) {
+                toolResult = { error: "Invalid file path" }
+              } else {
+                const dir = path.dirname(fullPath)
+                await fs.mkdir(dir, { recursive: true })
+                await fs.writeFile(fullPath, toolInput.content, "utf-8")
+                toolResult = { success: true, message: `File updated: ${toolInput.filepath}` }
+              }
             } else if (toolName === "deploy_to_staging") {
-              const deployResponse = await fetch(
-                `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/admin/deploy`,
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    files: toolInput.files,
-                    message: toolInput.message,
-                    target: "staging",
-                  }),
-                }
-              )
-              const data = await deployResponse.json()
-              toolResult = { success: data.success, message: data.message || data.error }
+              await configureGit({ name: "Admin Bot", email: "admin@active.vc" })
+              const currentBranch = await getCurrentBranch()
+              if (currentBranch !== "staging") {
+                await createAndCheckoutBranch("staging")
+              }
+              const conversationFile = `admin_ai_conversations/${getTodayFilename()}`
+              const filesToCommit = [...toolInput.files, conversationFile]
+              await commitChanges(toolInput.message, filesToCommit)
+              await pushToRemote("staging")
+              if (currentBranch !== "staging") {
+                await createAndCheckoutBranch(currentBranch)
+              }
+              toolResult = { success: true, message: "Changes deployed to staging" }
             }
           } catch (error) {
             toolResult = { error: error instanceof Error ? error.message : "Tool execution failed" }

@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const conversationsDir = path.join(process.cwd(), "conversations")
+    const conversationsDir = path.join(process.cwd(), "admin_ai_conversations")
     const filename = getTodayFilename()
     const filepath = path.join(conversationsDir, filename)
 
