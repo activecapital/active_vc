@@ -11,6 +11,7 @@ import "./embla.css"
 
 import { Noticia_Text } from 'next/font/google'
 import TopHeroCard from "./components/TopHeroCard"
+import { headers } from 'next/headers'
 
 const fontNoticiaText = Noticia_Text({
   weight: '400',
@@ -30,11 +31,30 @@ export const metadata: Metadata = {
   }
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const headersList = await headers()
+  const pathname = headersList.get('x-pathname') || ''
+  const isAdminRoute = pathname.startsWith('/admin')
+
+  if (isAdminRoute) {
+    return (
+      <html lang="en">
+        <head>
+          <title>Active Capital - Admin</title>
+          <GoogleTagManager gtmId="GTM-WLF2BJCJ" />
+        </head>
+        <body className="bg-black">
+          {children}
+          <SpeedInsights />
+          <Analytics />
+        </body>
+      </html>
+    )
+  }
 
   return (
     <html lang="en">

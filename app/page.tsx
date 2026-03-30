@@ -149,7 +149,7 @@ export default function Home() {
 
       <div className={`${subHeadingStyles} mt-6`}>
         <p>
-          If you&apos;re a founder building the future of enterprise, please email:&nbsp;
+          If you&apos;re a founder building AI-native business software, please email:&nbsp;
           <Link
           href={`#`}
           onClick={handleContactEmailClicked}
