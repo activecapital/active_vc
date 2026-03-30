@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import fs from "fs/promises"
-import path from "path"
+import { readFileFromGitHub, writeFileToGitHub, ensureBranchExists } from "@/lib/github-api"
 import { rateLimit, rateLimitConfigs } from "@/lib/rate-limit"
 
 export async function POST(request: NextRequest) {
@@ -21,22 +20,16 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { filepath, content, operation } = await request.json()
+    const { filepath, content, operation, branch = "staging" } = await request.json()
 
     if (!filepath) {
       return NextResponse.json({ error: "Filepath required" }, { status: 400 })
     }
 
-    const fullPath = path.join(process.cwd(), filepath)
-
-    if (!fullPath.startsWith(process.cwd())) {
-      return NextResponse.json({ error: "Invalid file path" }, { status: 400 })
-    }
-
     if (operation === "read") {
       try {
-        const fileContent = await fs.readFile(fullPath, "utf-8")
-        return NextResponse.json({ content: fileContent })
+        const file = await readFileFromGitHub(filepath, branch)
+        return NextResponse.json({ content: file.content })
       } catch (error) {
         return NextResponse.json({ error: "File not found" }, { status: 404 })
       }
@@ -45,10 +38,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Content required" }, { status: 400 })
       }
 
-      const dir = path.dirname(fullPath)
-      await fs.mkdir(dir, { recursive: true })
-
-      await fs.writeFile(fullPath, content, "utf-8")
+      await ensureBranchExists(branch)
+      await writeFileToGitHub(filepath, content, `Update ${filepath} via admin panel`, branch)
 
       return NextResponse.json({
         success: true,

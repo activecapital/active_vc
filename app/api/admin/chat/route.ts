@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import Anthropic from "@anthropic-ai/sdk"
-import fs from "fs/promises"
-import path from "path"
 import { rateLimit, rateLimitConfigs } from "@/lib/rate-limit"
 import {
-  configureGit,
-  createAndCheckoutBranch,
-  getCurrentBranch,
-  commitChanges,
-  pushToRemote,
-  hasUncommittedChanges,
-} from "@/lib/git-utils"
+  readFileFromGitHub,
+  writeFileToGitHub,
+  writeMultipleFiles,
+  ensureBranchExists,
+} from "@/lib/github-api"
 
 interface Message {
   role: "user" | "assistant" | "system"
@@ -40,25 +36,27 @@ function formatTime(timestamp: string): string {
 }
 
 async function appendToConversation(message: Message) {
-  const conversationsDir = path.join(process.cwd(), "admin_ai_conversations")
-  const filename = getTodayFilename()
-  const filepath = path.join(conversationsDir, filename)
-
-  await fs.mkdir(conversationsDir, { recursive: true })
-
-  let content = ""
   try {
-    content = await fs.readFile(filepath, "utf-8")
+    const filename = getTodayFilename()
+    const filepath = `admin_ai_conversations/${filename}`
+
+    let content = ""
+    try {
+      const existing = await readFileFromGitHub(filepath, "main")
+      content = existing.content
+    } catch (error) {
+      content = `# Conversation - ${formatDateHeader()}\n\n`
+    }
+
+    const roleLabel = message.role.charAt(0).toUpperCase() + message.role.slice(1)
+    const timeLabel = formatTime(message.timestamp)
+
+    content += `## ${timeLabel} - ${roleLabel}\n${message.content}\n\n`
+
+    await writeFileToGitHub(filepath, content, `Log conversation: ${roleLabel} at ${timeLabel}`, "main")
   } catch (error) {
-    content = `# Conversation - ${formatDateHeader()}\n\n`
+    console.warn("Could not save conversation:", (error as Error).message)
   }
-
-  const roleLabel = message.role.charAt(0).toUpperCase() + message.role.slice(1)
-  const timeLabel = formatTime(message.timestamp)
-
-  content += `## ${timeLabel} - ${roleLabel}\n${message.content}\n\n`
-
-  await fs.writeFile(filepath, content, "utf-8")
 }
 
 export async function POST(request: NextRequest) {
@@ -212,37 +210,25 @@ Be concise and proactive. Make changes confidently when requested.`
 
           try {
             if (toolName === "read_file") {
-              const fullPath = path.join(process.cwd(), toolInput.filepath)
-              if (!fullPath.startsWith(process.cwd())) {
-                toolResult = { error: "Invalid file path" }
-              } else {
-                const fileContent = await fs.readFile(fullPath, "utf-8")
-                toolResult = { content: fileContent }
-              }
+              const file = await readFileFromGitHub(toolInput.filepath, "staging")
+              toolResult = { content: file.content }
             } else if (toolName === "write_file") {
-              const fullPath = path.join(process.cwd(), toolInput.filepath)
-              if (!fullPath.startsWith(process.cwd())) {
-                toolResult = { error: "Invalid file path" }
-              } else {
-                const dir = path.dirname(fullPath)
-                await fs.mkdir(dir, { recursive: true })
-                await fs.writeFile(fullPath, toolInput.content, "utf-8")
-                toolResult = { success: true, message: `File updated: ${toolInput.filepath}` }
-              }
+              await ensureBranchExists("staging")
+              await writeFileToGitHub(
+                toolInput.filepath,
+                toolInput.content,
+                `Update ${toolInput.filepath} via admin panel`,
+                "staging"
+              )
+              toolResult = { success: true, message: `File updated on staging: ${toolInput.filepath}` }
             } else if (toolName === "deploy_to_staging") {
-              await configureGit({ name: "Admin Bot", email: "admin@active.vc" })
-              const currentBranch = await getCurrentBranch()
-              if (currentBranch !== "staging") {
-                await createAndCheckoutBranch("staging")
+              // Files were already written to staging branch via write_file
+              // This tool now just confirms the deployment
+              await ensureBranchExists("staging")
+              toolResult = {
+                success: true,
+                message: "Changes committed to staging branch. Vercel will auto-deploy.",
               }
-              const conversationFile = `admin_ai_conversations/${getTodayFilename()}`
-              const filesToCommit = [...toolInput.files, conversationFile]
-              await commitChanges(toolInput.message, filesToCommit)
-              await pushToRemote("staging")
-              if (currentBranch !== "staging") {
-                await createAndCheckoutBranch(currentBranch)
-              }
-              toolResult = { success: true, message: "Changes deployed to staging" }
             }
           } catch (error) {
             toolResult = { error: error instanceof Error ? error.message : "Tool execution failed" }
