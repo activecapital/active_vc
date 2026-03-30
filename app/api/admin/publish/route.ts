@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import {
-  getCurrentBranch,
-  createAndCheckoutBranch,
-  mergeBranches,
-  pushToRemote,
-  configureGit,
-} from "@/lib/git-utils"
+import { mergeBranches } from "@/lib/github-api"
 import { rateLimit, rateLimitConfigs } from "@/lib/rate-limit"
 
 export async function POST(request: NextRequest) {
@@ -26,26 +20,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    await configureGit({
-      name: "Admin Bot",
-      email: "admin@active.vc",
-    })
-
-    const currentBranch = await getCurrentBranch()
-
-    await createAndCheckoutBranch("main")
-
-    await mergeBranches("staging", "main")
-
-    await pushToRemote("main")
-
-    if (currentBranch !== "main") {
-      await createAndCheckoutBranch(currentBranch)
-    }
+    const result = await mergeBranches("staging", "main")
 
     return NextResponse.json({
       success: true,
-      message: "Staging changes published to production",
+      message: result.message + ". Vercel will auto-deploy to production.",
     })
   } catch (error) {
     console.error("Publish error:", error)

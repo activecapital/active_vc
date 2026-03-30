@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import {
-  getCurrentBranch,
-  createAndCheckoutBranch,
-  commitChanges,
-  pushToRemote,
-  configureGit,
-  hasUncommittedChanges,
-} from "@/lib/git-utils"
+import { ensureBranchExists } from "@/lib/github-api"
 import { rateLimit, rateLimitConfigs } from "@/lib/rate-limit"
 
 export async function POST(request: NextRequest) {
@@ -27,56 +20,20 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { files, message, target } = await request.json()
-
-    if (!files || !Array.isArray(files) || files.length === 0) {
-      return NextResponse.json({ error: "No files specified" }, { status: 400 })
-    }
-
-    if (!message) {
-      return NextResponse.json({ error: "Commit message required" }, { status: 400 })
-    }
-
-    await configureGit({
-      name: "Admin Bot",
-      email: "admin@active.vc",
-    })
-
-    const currentBranch = await getCurrentBranch()
+    const { target } = await request.json()
 
     if (target === "staging") {
-      if (currentBranch !== "staging") {
-        await createAndCheckoutBranch("staging")
-      }
-
-      const hasChanges = await hasUncommittedChanges()
-      if (!hasChanges && files.length === 0) {
-        return NextResponse.json(
-          { error: "No changes to commit" },
-          { status: 400 }
-        )
-      }
-
-      await commitChanges(message, files)
-      await pushToRemote("staging")
-
+      await ensureBranchExists("staging")
       return NextResponse.json({
         success: true,
         branch: "staging",
-        message: "Changes deployed to staging",
+        message: "Staging branch ready. Files are committed directly via GitHub API.",
       })
     } else if (target === "production") {
-      if (currentBranch !== "main") {
-        await createAndCheckoutBranch("main")
-      }
-
-      await commitChanges(message, files)
-      await pushToRemote("main")
-
       return NextResponse.json({
         success: true,
         branch: "main",
-        message: "Changes deployed to production",
+        message: "Use the Publish button to merge staging into production.",
       })
     } else {
       return NextResponse.json({ error: "Invalid target" }, { status: 400 })

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import fs from "fs/promises"
-import path from "path"
+import { readFileFromGitHub } from "@/lib/github-api"
 import { rateLimit, rateLimitConfigs } from "@/lib/rate-limit"
 
 interface Message {
@@ -68,13 +67,12 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const conversationsDir = path.join(process.cwd(), "admin_ai_conversations")
     const filename = getTodayFilename()
-    const filepath = path.join(conversationsDir, filename)
+    const filepath = `admin_ai_conversations/${filename}`
 
     try {
-      const content = await fs.readFile(filepath, "utf-8")
-      const messages = parseMarkdownConversation(content)
+      const file = await readFileFromGitHub(filepath, "main")
+      const messages = parseMarkdownConversation(file.content)
       return NextResponse.json({ messages })
     } catch (error) {
       return NextResponse.json({ messages: [] })
