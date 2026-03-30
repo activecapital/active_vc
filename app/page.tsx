@@ -149,15 +149,7 @@ export default function Home() {
 
       <div className={`${subHeadingStyles} mt-6`}>
         <p>
-          If you&apos;re a founder building AI-native business software, please email:&nbsp;
-          <Link
-          href={`#`}
-          onClick={handleContactEmailClicked}
-          className="text-white hover:underline">{teamContactEmail}</Link>
-        </p>
-
-        <p className='mt-4'>
-          Please include your deck, memo or anything else we can read to learn more quickly.
+          If you&apos;re a founder building AI-native business software, please email: team@active.vc
         </p>
       </div>
     </main >
