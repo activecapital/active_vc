@@ -7,6 +7,8 @@ import {
   writeMultipleFiles,
   ensureBranchExists,
 } from "@/lib/github-api"
+import { getAllContent, updateContent, updateMultipleContent } from "@/lib/content"
+import type { SiteContent } from "@/lib/content"
 
 interface Message {
   role: "user" | "assistant" | "system"
@@ -59,6 +61,8 @@ async function appendToConversation(message: Message) {
   }
 }
 
+export const maxDuration = 60
+
 export async function POST(request: NextRequest) {
   const rateLimitResult = await rateLimit(request, rateLimitConfigs.chat)
 
@@ -89,8 +93,6 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     }
 
-    await appendToConversation(userMessage)
-
     const conversationHistory = history
       .filter((msg: Message) => msg.role !== "system")
       .map((msg: Message) => ({
@@ -102,38 +104,71 @@ export async function POST(request: NextRequest) {
 
 Your role is to:
 1. Understand content change requests from the user
-2. Read and modify files as needed
+2. Read and modify content as needed (preferring the database for editable content)
 3. Deploy changes to staging for review
 4. Help publish approved changes to production
 
-The website has these main components:
-- app/components/HowWeInvest.tsx - Investment criteria
+CONTENT STORED IN DATABASE (Supabase):
+The following content is stored in a database and can be updated with the get_site_content and update_site_content tools:
+- hero_title: Main heading on the homepage hero section
+- hero_subtitle: Subtitle below the main heading
+- about_pat: Personal message from Pat Matthews
+- about_active_capital: Description of Active Capital
+- approach_items: Array of {label, icon} objects for the Approach/How We Invest grid
+- contact_html: HTML content for the Contact Us section
+
+IMPORTANT: For any changes to the above content, use get_site_content to read current values and update_site_content to modify them. These changes take effect immediately without needing to deploy to staging.
+
+The website also has these component files (for non-database changes):
+- app/components/HowWeInvest.tsx - Investment criteria (reads from DB)
 - app/components/Team.tsx - Team member information
 - app/components/Portfolio.tsx - Portfolio companies
-- app/components/TopHeroCard.tsx - Hero section
+- app/components/TopHeroCard.tsx - Hero section (reads from DB)
 - app/components/Contact.tsx - Contact information
 - app/components/Testimonials.tsx - Testimonials
 
 Available tools:
-- read_file: Read file contents
-- write_file: Write/update file contents
-- deploy_to_staging: Deploy changes to staging branch
-- publish_to_production: Publish staging to production
+- get_site_content: Read all current site content from the database
+- update_site_content: Update one or more content fields in the database
+- read_file: Read file contents from GitHub
+- write_file: Write/update file contents on GitHub
+- deploy_to_staging: Deploy file changes to staging branch
 
 Workflow:
-1. When user requests changes, read the relevant files first
-2. Make the modifications
+1. For database content changes: use get_site_content and update_site_content (instant, no deploy needed)
+2. For file-based changes: read the file, modify it, write it, deploy to staging
 3. Explain what you changed
-4. Deploy to staging automatically
-5. Tell user to review at staging URL
-6. Wait for user approval to publish
+4. For file changes, tell user to review at staging URL
 
 Be concise and proactive. Make changes confidently when requested.`
 
     const tools = [
       {
+        name: "get_site_content",
+        description: "Read all current site content from the Supabase database. Returns hero_title, hero_subtitle, about_pat, about_active_capital, approach_items, and contact_html.",
+        input_schema: {
+          type: "object" as const,
+          properties: {},
+          required: [] as string[],
+        },
+      },
+      {
+        name: "update_site_content",
+        description: "Update one or more content fields in the Supabase database. Changes take effect immediately. Valid keys: hero_title, hero_subtitle, about_pat, about_active_capital, approach_items (array of {label, icon}), contact_html (HTML string).",
+        input_schema: {
+          type: "object" as const,
+          properties: {
+            updates: {
+              type: "object" as const,
+              description: "Object with content keys and their new values. e.g. { hero_title: 'New Title', about_pat: 'New bio...' }",
+            },
+          },
+          required: ["updates"],
+        },
+      },
+      {
         name: "read_file",
-        description: "Read the contents of a file in the project",
+        description: "Read the contents of a file in the project from GitHub",
         input_schema: {
           type: "object" as const,
           properties: {
@@ -147,7 +182,7 @@ Be concise and proactive. Make changes confidently when requested.`
       },
       {
         name: "write_file",
-        description: "Write or update a file in the project",
+        description: "Write or update a file in the project on GitHub staging branch",
         input_schema: {
           type: "object" as const,
           properties: {
@@ -184,13 +219,13 @@ Be concise and proactive. Make changes confidently when requested.`
       },
     ]
 
-    const MAX_TOOL_ROUNDS = 10
+    const MAX_TOOL_ROUNDS = 5
     let assistantContent = ""
     let currentMessages: any[] = [...conversationHistory, { role: "user", content: message }]
 
     for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
       const response = await anthropic.messages.create({
-        model: "claude-opus-4-20250514",
+        model: "claude-sonnet-4-20250514",
         max_tokens: 4096,
         system: systemPrompt,
         tools,
@@ -209,7 +244,17 @@ Be concise and proactive. Make changes confidently when requested.`
           let toolResult: any = {}
 
           try {
-            if (toolName === "read_file") {
+            if (toolName === "get_site_content") {
+              const siteContent = await getAllContent()
+              toolResult = siteContent
+            } else if (toolName === "update_site_content") {
+              const result = await updateMultipleContent(toolInput.updates)
+              if (result.success) {
+                toolResult = { success: true, message: "Content updated in database. Changes are live immediately.", updated_keys: Object.keys(toolInput.updates) }
+              } else {
+                toolResult = { error: result.error || "Failed to update content" }
+              }
+            } else if (toolName === "read_file") {
               const file = await readFileFromGitHub(toolInput.filepath, "staging")
               toolResult = { content: file.content }
             } else if (toolName === "write_file") {
@@ -260,8 +305,6 @@ Be concise and proactive. Make changes confidently when requested.`
       content: assistantContent,
       timestamp: new Date().toISOString(),
     }
-
-    await appendToConversation(assistantMessage)
 
     return NextResponse.json({ message: assistantMessage })
   } catch (error) {

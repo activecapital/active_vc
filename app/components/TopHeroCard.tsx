@@ -1,4 +1,6 @@
 import { Lexend_Deca } from 'next/font/google'
+import { getAllContent } from '@/lib/content'
+
 const fontLexendDeca = Lexend_Deca({
   weight: ['600', '700'],
   subsets: ['latin']
@@ -6,7 +8,10 @@ const fontLexendDeca = Lexend_Deca({
 
 const containerClasses = `p-4 md:p-8 text-center flex flex-col items-center justify-center`
 
-const TopHeroCard = () => {
+const TopHeroCard = async () => {
+  const content = await getAllContent()
+  const heroTitle = content.hero_title
+  const heroSubtitle = content.hero_subtitle
 
   return (<div className={`${containerClasses} h-[calc(50vh)] sm:h-[calc(100vh-96px-36px)]
     bg-[url('/img/hero-bg-500.svg')]
@@ -18,8 +23,8 @@ const TopHeroCard = () => {
     <h1 className={`${fontLexendDeca.className} text-white
       text-[34px] sm:text-[48px] md:text-[56px] 
       leading-[42px] sm:leading-[56px] md:leading-[74px]`}>
-  <span className="hidden md:inline">Founder Led Capital for<br />Founder Led Companies</span>
-  <span className="md:hidden">Founder Led Capital for Founder Led Companies</span>
+  <span className="hidden md:inline">{heroTitle}</span>
+  <span className="md:hidden">{heroTitle}</span>
 </h1>
 
     <div className="
@@ -29,11 +34,9 @@ const TopHeroCard = () => {
       md:text-[24px]
       leading-[24px] tracking-wide">
       {/* mobile screens */}
-      <div className='md:hidden'>Pre-Seed Investing in</div>
-      <div className='md:hidden'>AI-Native Business Software</div>
+      <div className='md:hidden'>{heroSubtitle}</div>
       {/* large screens */}
-      <div className='hidden md:block'>Pre-Seed Investing in AI-Native Business Software
-      </div>
+      <div className='hidden md:block'>{heroSubtitle}</div>
     </div>
   </div>)
 }
