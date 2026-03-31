@@ -15,6 +15,7 @@ import Contact from "./components/Contact"
 import Newsletter from "./components/Newsletter"
 import HowWeInvest from "./components/HowWeInvest"
 import type { SiteContent } from "@/lib/content"
+import { renderTextWithBreaks } from './src/renderText'
 
 
 const fontLexendDeca = Lexend_Deca({
@@ -109,7 +110,7 @@ export default function Home() {
           </Link>
         </div>
         <div className={`${aboutMsgTextContainer}`}>
-          {aboutPatText}
+          {renderTextWithBreaks(aboutPatText)}
         </div>
       </div>
 
@@ -122,7 +123,7 @@ export default function Home() {
           <Image src="/img/active-capital-icon.svg" width={180} height={180} alt="Active Capital Icon" className={`${aboutImgStyles}`} />
         </div>
         <div className={aboutMsgTextContainer}>
-          {aboutActiveCapitalText}
+          {renderTextWithBreaks(aboutActiveCapitalText)}
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 import { Lexend_Deca } from 'next/font/google'
 import { getAllContent } from '@/lib/content'
+import { renderTextWithBreaks } from '../src/renderText'
 
 const fontLexendDeca = Lexend_Deca({
   weight: ['600', '700'],
@@ -23,16 +24,7 @@ const TopHeroCard = async () => {
     <h1 className={`${fontLexendDeca.className} text-white
       text-[34px] sm:text-[48px] md:text-[56px] 
       leading-[42px] sm:leading-[56px] md:leading-[74px]`}>
-  {(() => {
-    const parts = heroTitle.includes('\\n')
-      ? heroTitle.split('\\n')
-      : heroTitle.split('\n')
-    return parts.length > 1
-      ? parts.map((line, i) => (
-          <span key={i}>{line.trim()}{i < parts.length - 1 && <br />}</span>
-        ))
-      : heroTitle
-  })()}
+  {renderTextWithBreaks(heroTitle)}
 </h1>
 
     <div className="
@@ -41,10 +33,7 @@ const TopHeroCard = async () => {
       text-[18px]
       md:text-[24px]
       leading-[24px] tracking-wide">
-      {/* mobile screens */}
-      <div className='md:hidden'>{heroSubtitle}</div>
-      {/* large screens */}
-      <div className='hidden md:block'>{heroSubtitle}</div>
+      {renderTextWithBreaks(heroSubtitle)}
     </div>
   </div>)
 }
