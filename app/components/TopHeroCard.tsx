@@ -23,8 +23,15 @@ const TopHeroCard = async () => {
     <h1 className={`${fontLexendDeca.className} text-white
       text-[34px] sm:text-[48px] md:text-[56px] 
       leading-[42px] sm:leading-[56px] md:leading-[74px]`}>
-  <span className="hidden md:inline">{heroTitle}</span>
-  <span className="md:hidden">{heroTitle}</span>
+  {heroTitle.split('\n').length > 1
+    ? heroTitle.split('\n').map((line, i) => (
+        <span key={i}>{line}{i < heroTitle.split('\n').length - 1 && <br />}</span>
+      ))
+    : <>
+        <span className="hidden md:inline">Founder Led Capital for<br />Founder Led Companies</span>
+        <span className="md:hidden">{heroTitle}</span>
+      </>
+  }
 </h1>
 
     <div className="
