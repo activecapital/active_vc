@@ -176,6 +176,16 @@ export default function EditorPage() {
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <h1 className="text-xl font-semibold text-white">Visual Editor</h1>
           <div className="flex gap-3 items-center">
+            <a
+              href={typeof window !== 'undefined' && window.location.hostname === 'localhost'
+                ? `${window.location.origin}`
+                : process.env.NEXT_PUBLIC_STAGING_URL || '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 text-yellow-400 border border-yellow-400/30 rounded-lg text-sm font-medium hover:bg-yellow-400/10 transition-colors"
+            >
+              Preview Staging ↗
+            </a>
             <Link
               href="/admin"
               className="px-4 py-2 text-zinc-400 hover:text-white text-sm transition-colors"
