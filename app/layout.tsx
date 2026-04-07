@@ -24,10 +24,22 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Active Capital",
     description: "Founder led capital for founder led companies. Pre-Seed Investing in AI-Native Business Software",
+    url: "https://active.vc",
+    siteName: "Active Capital",
     images: [{
-      url: "https://activecapital.com/img/active-capital-icon.svg",
-      alt: "Photo of the Active Capital Logo",
+      url: "https://active.vc/img/active-capital-logo.png",
+      width: 1200,
+      height: 1200,
+      alt: "Active Capital Logo",
+      type: "image/png",
     }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Active Capital",
+    description: "Founder led capital for founder led companies. Pre-Seed Investing in AI-Native Business Software",
+    images: ["https://active.vc/img/active-capital-logo.png"],
   }
 }
 
