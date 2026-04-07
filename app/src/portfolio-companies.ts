@@ -20,9 +20,9 @@ export const PortfolioCompanies = [
     acquiredBy: 'Flexera'
   },
   {
-    companyName: 'Conductor One',
-    src: '/img/logos/conductor-one.svg',
-    website: 'https://www.conductorone.com/',
+    companyName: 'C1.ai',
+    src: '/img/logos/c1.svg',
+    website: 'https://www.c1.ai/',
     width: defaultWidth,
     height: defaultHeight,
   },
