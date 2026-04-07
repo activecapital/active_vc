@@ -72,11 +72,17 @@ export default async function RootLayout({
     <html lang="en">
       <head>
         <title>Active Capital</title>
+        <meta property="og:url" content="https://active.vc" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Active Capital" />
+        <meta property="og:description" content="Founder led capital for founder led companies. Pre-Seed Investing in AI-Native Business Software. We back technical founders building the future." />
         <meta property="og:image" content="https://active.vc/img/active-capital-logo.png" />
+        <meta property="og:image:secure_url" content="https://active.vc/img/active-capital-logo.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="1200" />
         <meta property="og:image:type" content="image/png" />
         <meta property="og:image:alt" content="Active Capital Logo" />
+        <meta property="fb:app_id" content="966242223397117" />
         <GoogleTagManager gtmId="GTM-WLF2BJCJ" />
       </head>
       <body className="bg-white ease-in 
