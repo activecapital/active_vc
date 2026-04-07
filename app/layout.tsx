@@ -72,6 +72,11 @@ export default async function RootLayout({
     <html lang="en">
       <head>
         <title>Active Capital</title>
+        <meta property="og:image" content="https://active.vc/img/active-capital-logo.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="1200" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content="Active Capital Logo" />
         <GoogleTagManager gtmId="GTM-WLF2BJCJ" />
       </head>
       <body className="bg-white ease-in 
