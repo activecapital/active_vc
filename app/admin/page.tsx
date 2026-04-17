@@ -445,8 +445,23 @@ export default function AdminPage() {
           <div className={`flex-1 overflow-y-auto px-3 py-4 space-y-4 ${SCROLLBAR}`}>
             {messages.length === 0 && (
               <div className="flex justify-start">
-                <div className="max-w-[90%] rounded-2xl px-3 py-2 text-sm bg-zinc-900 text-white">
-                  How can I help you today?
+                <div className="max-w-[90%] rounded-2xl px-3 py-2 text-sm bg-zinc-900 text-white space-y-2">
+                  <p>Hello! I&apos;m here to help you manage the Active VC website. I can help you with:</p>
+                  <p className="font-semibold">Content Updates:</p>
+                  <ul className="list-disc pl-4 space-y-0.5">
+                    <li>Hero section text (title, subtitle)</li>
+                    <li>About section (Pat&apos;s message, Active Capital description)</li>
+                    <li>Investment approach items</li>
+                    <li>Contact information</li>
+                  </ul>
+                  <p className="font-semibold">File Changes:</p>
+                  <ul className="list-disc pl-4 space-y-0.5">
+                    <li>Team member information</li>
+                    <li>Portfolio companies</li>
+                    <li>Testimonials</li>
+                    <li>Other component modifications</li>
+                  </ul>
+                  <p>What would you like to update or modify on the website today?</p>
                 </div>
               </div>
             )}
