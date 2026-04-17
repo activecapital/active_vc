@@ -22,6 +22,11 @@ function createSession(): ChatSession {
 const SCROLLBAR =
   "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-zinc-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-zinc-500"
 
+function toEditorHtml(text: string): string {
+  if (/<[a-z][\s\S]*>/i.test(text)) return text
+  return text.replace(/\\n/g, "<br>").replace(/\n/g, "<br>")
+}
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState("")
@@ -43,7 +48,6 @@ export default function AdminPage() {
   const [saved, setSaved] = useState<Record<string, boolean>>({})
   const [error, setError] = useState<string | null>(null)
   const [editorLoading, setEditorLoading] = useState(true)
-  const contactRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const authStatus = sessionStorage.getItem("admin_authenticated")
@@ -85,7 +89,7 @@ export default function AdminPage() {
 
   const closeSession = (id: string) => {
     setSessions((prev) => {
-      if (prev.length === 1) return prev // keep at least one
+      if (prev.length === 1) return prev
       const next = prev.filter((s) => s.id !== id)
       if (id === activeId) setActiveId(next[next.length - 1].id)
       return next
@@ -184,7 +188,13 @@ export default function AdminPage() {
       const response = await fetch("/api/admin/content")
       if (response.ok) {
         const data = await response.json()
-        setContent(data)
+        setContent({
+          ...data,
+          hero_title: toEditorHtml(data.hero_title),
+          hero_subtitle: toEditorHtml(data.hero_subtitle),
+          about_pat: toEditorHtml(data.about_pat),
+          about_active_capital: toEditorHtml(data.about_active_capital),
+        })
       } else {
         setError("Failed to load content")
       }
@@ -245,16 +255,6 @@ export default function AdminPage() {
   const removeApproachItem = (index: number) => {
     if (!content) return
     updateField("approach_items", content.approach_items.filter((_, i) => i !== index))
-  }
-
-  const execCommand = (command: string, value?: string) => {
-    document.execCommand(command, false, value)
-    contactRef.current?.focus()
-  }
-
-  const insertLink = () => {
-    const url = prompt("Enter URL:")
-    if (url) execCommand("createLink", url)
   }
 
   // --- Login screen ---
@@ -346,19 +346,19 @@ export default function AdminPage() {
           ) : (
             <div className="px-6 py-6 space-y-8">
               <Section title="Hero Title" description="Main heading displayed on the homepage hero section." saving={saving.hero_title} saved={saved.hero_title} onSave={() => saveField("hero_title", content.hero_title)}>
-                <input type="text" value={content.hero_title} onChange={(e) => updateField("hero_title", e.target.value)} className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 text-lg" />
+                <RichTextEditor value={content.hero_title} onChange={(html) => updateField("hero_title", html)} minHeight="60px" />
               </Section>
 
               <Section title="Hero Subtitle" description="Subtitle displayed below the main heading." saving={saving.hero_subtitle} saved={saved.hero_subtitle} onSave={() => saveField("hero_subtitle", content.hero_subtitle)}>
-                <input type="text" value={content.hero_subtitle} onChange={(e) => updateField("hero_subtitle", e.target.value)} className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600" />
+                <RichTextEditor value={content.hero_subtitle} onChange={(html) => updateField("hero_subtitle", html)} minHeight="60px" />
               </Section>
 
               <Section title="About Pat" description="Personal message from Pat Matthews shown at the top of the page." saving={saving.about_pat} saved={saved.about_pat} onSave={() => saveField("about_pat", content.about_pat)}>
-                <textarea value={content.about_pat} onChange={(e) => updateField("about_pat", e.target.value)} rows={6} className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 resize-y" />
+                <RichTextEditor value={content.about_pat} onChange={(html) => updateField("about_pat", html)} />
               </Section>
 
               <Section title="About Active Capital" description="Description of Active Capital shown in the About section." saving={saving.about_active_capital} saved={saved.about_active_capital} onSave={() => saveField("about_active_capital", content.about_active_capital)}>
-                <textarea value={content.about_active_capital} onChange={(e) => updateField("about_active_capital", e.target.value)} rows={6} className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 resize-y" />
+                <RichTextEditor value={content.about_active_capital} onChange={(html) => updateField("about_active_capital", html)} />
               </Section>
 
               <Section title="Approach" description="Items displayed in the How We Invest grid. Use arrows to reorder." saving={saving.approach_items} saved={saved.approach_items} onSave={() => saveField("approach_items", content.approach_items)}>
@@ -378,26 +378,8 @@ export default function AdminPage() {
                 <button onClick={addApproachItem} className="mt-3 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 text-sm hover:bg-zinc-700 transition-colors">+ Add Item</button>
               </Section>
 
-              <Section title="Contact Us" description="Rich text content for the Contact Us section." saving={saving.contact_html} saved={saved.contact_html} onSave={() => { const html = contactRef.current?.innerHTML || content.contact_html; updateField("contact_html", html); saveField("contact_html", html) }}>
-                <div className="flex flex-wrap gap-1 mb-2 p-2 bg-zinc-900 border border-zinc-800 rounded-t-lg">
-                  <ToolbarButton label="B" onClick={() => execCommand("bold")} bold />
-                  <ToolbarButton label="I" onClick={() => execCommand("italic")} italic />
-                  <ToolbarButton label="U" onClick={() => execCommand("underline")} />
-                  <div className="w-px bg-zinc-700 mx-1" />
-                  <ToolbarButton label="H2" onClick={() => execCommand("formatBlock", "h2")} />
-                  <ToolbarButton label="H3" onClick={() => execCommand("formatBlock", "h3")} />
-                  <ToolbarButton label="P" onClick={() => execCommand("formatBlock", "p")} />
-                  <div className="w-px bg-zinc-700 mx-1" />
-                  <ToolbarButton label="Link" onClick={insertLink} />
-                  <ToolbarButton label="Unlink" onClick={() => execCommand("unlink")} />
-                  <div className="w-px bg-zinc-700 mx-1" />
-                  <ToolbarButton label="UL" onClick={() => execCommand("insertUnorderedList")} />
-                  <ToolbarButton label="OL" onClick={() => execCommand("insertOrderedList")} />
-                </div>
-                <div ref={contactRef} contentEditable suppressContentEditableWarning dangerouslySetInnerHTML={{ __html: content.contact_html }}
-                  className="w-full min-h-[150px] px-4 py-3 bg-zinc-900 border border-zinc-800 border-t-0 rounded-b-lg text-white focus:outline-none focus:border-zinc-600 prose prose-invert max-w-none [&_a]:text-blue-400 [&_a]:underline [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-3 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-1"
-                />
-                <div className="mt-2 text-xs text-zinc-500">Tip: Select text and use the toolbar buttons to format. Use the Link button to add hyperlinks.</div>
+              <Section title="Contact Us" description="Rich text content for the Contact Us section." saving={saving.contact_html} saved={saved.contact_html} onSave={() => saveField("contact_html", content.contact_html)}>
+                <RichTextEditor value={content.contact_html} onChange={(html) => updateField("contact_html", html)} />
               </Section>
             </div>
           )}
@@ -555,5 +537,61 @@ function ToolbarButton({ label, onClick, bold, italic }: { label: string; onClic
     >
       {label}
     </button>
+  )
+}
+
+function RichTextEditor({
+  value,
+  onChange,
+  minHeight = "150px",
+}: {
+  value: string
+  onChange: (html: string) => void
+  minHeight?: string
+}) {
+  const editorRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (editorRef.current && editorRef.current.innerHTML !== value) {
+      editorRef.current.innerHTML = value
+    }
+  }, [value])
+
+  const exec = (command: string, val?: string) => {
+    editorRef.current?.focus()
+    document.execCommand(command, false, val)
+  }
+
+  const insertLink = () => {
+    const url = prompt("Enter URL:")
+    if (url) exec("createLink", url)
+  }
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-1 p-2 bg-zinc-900 border border-zinc-800 rounded-t-lg">
+        <ToolbarButton label="B" onClick={() => exec("bold")} bold />
+        <ToolbarButton label="I" onClick={() => exec("italic")} italic />
+        <ToolbarButton label="U" onClick={() => exec("underline")} />
+        <div className="w-px bg-zinc-700 mx-1" />
+        <ToolbarButton label="H2" onClick={() => exec("formatBlock", "h2")} />
+        <ToolbarButton label="H3" onClick={() => exec("formatBlock", "h3")} />
+        <ToolbarButton label="P" onClick={() => exec("formatBlock", "p")} />
+        <div className="w-px bg-zinc-700 mx-1" />
+        <ToolbarButton label="Link" onClick={insertLink} />
+        <ToolbarButton label="Unlink" onClick={() => exec("unlink")} />
+        <div className="w-px bg-zinc-700 mx-1" />
+        <ToolbarButton label="UL" onClick={() => exec("insertUnorderedList")} />
+        <ToolbarButton label="OL" onClick={() => exec("insertOrderedList")} />
+      </div>
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={() => onChange(editorRef.current?.innerHTML || "")}
+        style={{ minHeight }}
+        className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 border-t-0 rounded-b-lg text-white focus:outline-none focus:border-zinc-600 prose prose-invert max-w-none [&_a]:text-blue-400 [&_a]:underline [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-3 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-1"
+      />
+    </div>
   )
 }
