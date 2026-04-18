@@ -15,7 +15,6 @@ import Contact from "./components/Contact"
 import Newsletter from "./components/Newsletter"
 import HowWeInvest from "./components/HowWeInvest"
 import type { SiteContent } from "@/lib/content"
-import { renderTextWithBreaks } from './src/renderText'
 
 
 const fontLexendDeca = Lexend_Deca({
@@ -109,9 +108,7 @@ export default function Home() {
             <Image src="/img/pat-matthews.png" width={800} height={800} alt="Pat Matthews" className={`${aboutImgStyles}`} />
           </Link>
         </div>
-        <div className={`${aboutMsgTextContainer}`}>
-          {renderTextWithBreaks(aboutPatText)}
-        </div>
+        <div className={`${aboutMsgTextContainer}`} dangerouslySetInnerHTML={{ __html: aboutPatText }} />
       </div>
 
       <h2 className={`${sectionHeadingStyles}`}>About</h2>
@@ -122,9 +119,7 @@ export default function Home() {
         <div className={`${aboutMsgImgContainer}`}>
           <Image src="/img/active-capital-icon.svg" width={180} height={180} alt="Active Capital Icon" className={`${aboutImgStyles}`} />
         </div>
-        <div className={aboutMsgTextContainer}>
-          {renderTextWithBreaks(aboutActiveCapitalText)}
-        </div>
+        <div className={aboutMsgTextContainer} dangerouslySetInnerHTML={{ __html: aboutActiveCapitalText }} />
       </div>
 
       <h2 className={`${sectionHeadingStyles}`}>Approach</h2>
