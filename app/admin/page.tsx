@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import type { SiteContent, ApproachItem } from "@/lib/content"
+import { createBrowserSupabase } from "@/lib/supabase-browser"
 
 interface Message {
   role: "user" | "assistant" | "system"
@@ -27,9 +28,19 @@ function toEditorHtml(text: string): string {
   return text.replace(/\\n/g, "<br>").replace(/\n/g, "<br>")
 }
 
+type LoginType = "email" | "phone"
+type LoginStep = "input" | "sent" | "code"
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState("")
+
+  // Login form state
+  const [loginType, setLoginType] = useState<LoginType>("email")
+  const [loginValue, setLoginValue] = useState("")
+  const [loginStep, setLoginStep] = useState<LoginStep>("input")
+  const [otpCode, setOtpCode] = useState("")
+  const [loginLoading, setLoginLoading] = useState(false)
+  const [loginError, setLoginError] = useState<string | null>(null)
 
   // --- AI Chat state ---
   const [sessions, setSessions] = useState<ChatSession[]>(() => [createSession()])
@@ -50,13 +61,28 @@ export default function AdminPage() {
   const [editorLoading, setEditorLoading] = useState(true)
 
   useEffect(() => {
-    const authStatus = sessionStorage.getItem("admin_authenticated")
-    if (authStatus === "true") {
-      setIsAuthenticated(true)
-      loadContent()
-    } else {
-      setEditorLoading(false)
-    }
+    const supabase = createBrowserSupabase()
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsAuthenticated(true)
+        loadContent()
+      } else {
+        setEditorLoading(false)
+      }
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        setIsAuthenticated(true)
+        loadContent()
+      } else if (event === "SIGNED_OUT") {
+        setIsAuthenticated(false)
+        setEditorLoading(false)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -97,21 +123,69 @@ export default function AdminPage() {
   }
 
   // --- Auth ---
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
-    const response = await fetch("/api/admin/auth", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    })
+    setLoginError(null)
+    setLoginLoading(true)
+    try {
+      // Step 1: whitelist check (server-side, service role)
+      const body =
+        loginType === "email"
+          ? { type: "email", email: loginValue }
+          : { type: "phone", phone: loginValue }
 
-    if (response.ok) {
-      sessionStorage.setItem("admin_authenticated", "true")
-      setIsAuthenticated(true)
-      loadContent()
-    } else {
-      alert("Invalid password")
+      const res = await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? "Not authorized")
+
+      // Step 2: send OTP from browser so PKCE code_verifier is stored in cookie
+      const supabase = createBrowserSupabase()
+      if (loginType === "email") {
+        const { error } = await supabase.auth.signInWithOtp({
+          email: loginValue,
+          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+        })
+        if (error) throw error
+        setLoginStep("sent")
+      } else {
+        const { error } = await supabase.auth.signInWithOtp({ phone: loginValue })
+        if (error) throw error
+        setLoginStep("code")
+      }
+    } catch (err: any) {
+      setLoginError(err.message)
+    } finally {
+      setLoginLoading(false)
     }
+  }
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoginError(null)
+    setLoginLoading(true)
+    try {
+      const res = await fetch("/api/admin/auth/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: loginValue, token: otpCode }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? "Verification failed")
+      // onAuthStateChange will pick up the new session
+    } catch (err: any) {
+      setLoginError(err.message)
+    } finally {
+      setLoginLoading(false)
+    }
+  }
+
+  const handleLogout = async () => {
+    const supabase = createBrowserSupabase()
+    await supabase.auth.signOut()
   }
 
   // --- AI Chat ---
@@ -261,23 +335,106 @@ export default function AdminPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <h1 className="text-3xl font-bold text-white mb-8 text-center">Admin Access</h1>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
-              className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
-            />
+        <div className="w-full max-w-sm">
+          <h1 className="text-3xl font-bold text-white mb-2 text-center">Admin Access</h1>
+          <p className="text-zinc-500 text-sm text-center mb-8">Active VC</p>
+
+          {/* Method toggle */}
+          <div className="flex rounded-lg bg-zinc-900 border border-zinc-800 p-1 mb-6">
             <button
-              type="submit"
-              className="w-full px-4 py-3 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition-colors"
+              onClick={() => { setLoginType("email"); setLoginStep("input"); setLoginError(null); setLoginValue("") }}
+              className={`flex-1 py-2 text-sm rounded-md transition-colors ${loginType === "email" ? "bg-white text-black font-medium" : "text-zinc-400 hover:text-white"}`}
             >
-              Login
+              Email Link
             </button>
-          </form>
+            <button
+              onClick={() => { setLoginType("phone"); setLoginStep("input"); setLoginError(null); setLoginValue("") }}
+              className={`flex-1 py-2 text-sm rounded-md transition-colors ${loginType === "phone" ? "bg-white text-black font-medium" : "text-zinc-400 hover:text-white"}`}
+            >
+              Text Code
+            </button>
+          </div>
+
+          {loginError && (
+            <div className="mb-4 px-4 py-3 bg-red-900/40 border border-red-800 text-red-300 text-sm rounded-lg">
+              {loginError}
+            </div>
+          )}
+
+          {/* Step: enter email or phone */}
+          {loginStep === "input" && (
+            <form onSubmit={handleSendOtp} className="space-y-4">
+              {loginType === "email" ? (
+                <input
+                  type="email"
+                  value={loginValue}
+                  onChange={(e) => setLoginValue(e.target.value)}
+                  placeholder="your@email.com"
+                  required
+                  autoFocus
+                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
+                />
+              ) : (
+                <input
+                  type="tel"
+                  value={loginValue}
+                  onChange={(e) => setLoginValue(e.target.value)}
+                  placeholder="+12184602308"
+                  required
+                  autoFocus
+                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
+                />
+              )}
+              <button
+                type="submit"
+                disabled={loginLoading || !loginValue.trim()}
+                className="w-full px-4 py-3 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loginLoading ? "Sending…" : loginType === "email" ? "Send Login Link" : "Send Code"}
+              </button>
+            </form>
+          )}
+
+          {/* Step: email sent confirmation */}
+          {loginStep === "sent" && (
+            <div className="text-center space-y-4">
+              <div className="text-4xl">📬</div>
+              <p className="text-white font-medium">Check your email</p>
+              <p className="text-zinc-400 text-sm">We sent a login link to <span className="text-white">{loginValue}</span>. Click it to sign in.</p>
+              <button onClick={() => { setLoginStep("input"); setLoginError(null) }} className="text-zinc-500 text-sm hover:text-white transition-colors">
+                Use a different address
+              </button>
+            </div>
+          )}
+
+          {/* Step: enter SMS code */}
+          {loginStep === "code" && (
+            <form onSubmit={handleVerifyOtp} className="space-y-4">
+              <p className="text-zinc-400 text-sm text-center">Enter the code sent to <span className="text-white">{loginValue}</span></p>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                placeholder="000000"
+                required
+                autoFocus
+                className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-center text-xl tracking-[0.5em] placeholder-zinc-700 focus:outline-none focus:border-zinc-600"
+              />
+              <button
+                type="submit"
+                disabled={loginLoading || otpCode.length < 6}
+                className="w-full px-4 py-3 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loginLoading ? "Verifying…" : "Verify Code"}
+              </button>
+              <button type="button" onClick={() => { setLoginStep("input"); setOtpCode(""); setLoginError(null) }} className="w-full text-zinc-500 text-sm hover:text-white transition-colors">
+                Resend code
+              </button>
+            </form>
+          )}
         </div>
       </div>
     )
@@ -311,10 +468,7 @@ export default function AdminPage() {
               Publish to Production
             </button>
             <button
-              onClick={() => {
-                sessionStorage.removeItem("admin_authenticated")
-                setIsAuthenticated(false)
-              }}
+              onClick={handleLogout}
               className="text-sm text-zinc-400 hover:text-white transition-colors"
             >
               Logout
