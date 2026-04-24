@@ -2,10 +2,11 @@ import { createServerClient } from "@supabase/ssr"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
+const SESSION_MAX_AGE_HOURS = 1
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
-  // Refresh Supabase session so it doesn't expire mid-visit
   if (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,7 +30,28 @@ export async function middleware(request: NextRequest) {
     )
 
     // Required to keep session fresh — do not add logic between this and getUser()
-    await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // Enforce session max age on admin routes
+    if (request.nextUrl.pathname.startsWith("/admin") && user?.last_sign_in_at) {
+      const ageHours =
+        (Date.now() - new Date(user.last_sign_in_at).getTime()) /
+        (1000 * 60 * 60)
+
+      if (ageHours > SESSION_MAX_AGE_HOURS) {
+        await supabase.auth.signOut()
+        const url = request.nextUrl.clone()
+        url.pathname = "/admin"
+        const redirectResponse = NextResponse.redirect(url)
+        // Transfer the sign-out Set-Cookie headers so session cookies are deleted
+        const signOutCookies =
+          (supabaseResponse.headers as any).getSetCookie?.() ?? []
+        signOutCookies.forEach((cookie: string) => {
+          redirectResponse.headers.append("set-cookie", cookie)
+        })
+        return redirectResponse
+      }
+    }
   }
 
   supabaseResponse.headers.set("x-pathname", request.nextUrl.pathname)
