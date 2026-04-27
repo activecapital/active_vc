@@ -247,7 +247,10 @@ export default function AdminPage() {
       if (response.ok) {
         const data = await response.json()
         setVersions(data.versions ?? [])
-        if (data.versions?.length > 0) setCurrentVersion(data.versions[0].version)
+        // Only set currentVersion on initial load (when null); publish/revert handlers set it explicitly
+        if (data.versions?.length > 0) {
+          setCurrentVersion((prev) => (prev === null ? data.versions[0].version : prev))
+        }
       }
     } catch {
       // non-fatal
@@ -736,12 +739,12 @@ export default function AdminPage() {
               {versions.length === 0 ? (
                 <div className="px-5 py-8 text-zinc-500 text-sm text-center">No versions published yet.</div>
               ) : (
-                versions.map((v, i) => (
+                versions.map((v) => (
                   <div key={v.id} className="flex items-center justify-between px-5 py-3">
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-white text-sm font-mono">v{v.version}</span>
-                        {i === 0 && (
+                        {v.version === currentVersion && (
                           <span className="text-xs bg-green-900/50 text-green-400 border border-green-800 px-1.5 py-0.5 rounded">
                             current
                           </span>
@@ -751,7 +754,7 @@ export default function AdminPage() {
                         {new Date(v.published_at).toLocaleString()}
                       </div>
                     </div>
-                    {i !== 0 && (
+                    {v.version !== currentVersion && (
                       <button
                         onClick={() => handleRevert(v.id, v.version)}
                         disabled={revertingId === v.id}
