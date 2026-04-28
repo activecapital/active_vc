@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server"
-import { getProductionContent } from "@/lib/content"
+import { getAllContent } from "@/lib/content"
 
 export const revalidate = 60
 
 export async function GET() {
   try {
-    const content = await getProductionContent()
+    const content = await getAllContent()
     return NextResponse.json(content)
   } catch (error) {
     console.error("Content fetch error:", error)

@@ -56,7 +56,7 @@ function rowsToContent(rows: Array<{ key: string; value: any }>): SiteContent {
   }
 }
 
-// Reads from staging table (used by admin editor)
+// Reads from site_content — staging DB on staging/local, production DB on production Vercel
 export async function getAllContent(): Promise<SiteContent> {
   try {
     const supabase = getSupabase()
@@ -67,25 +67,7 @@ export async function getAllContent(): Promise<SiteContent> {
     if (error || !data || data.length === 0) return DEFAULT_CONTENT
     return rowsToContent(data)
   } catch (err) {
-    console.error("Failed to fetch staging content:", err)
-    return DEFAULT_CONTENT
-  }
-}
-
-// Reads from production table (used by public website on all environments)
-export async function getProductionContent(): Promise<SiteContent> {
-  try {
-    const supabase = getSupabase()
-    if (!supabase) return DEFAULT_CONTENT
-
-    const { data, error } = await supabase
-      .from("production_site_content")
-      .select("key, value")
-
-    if (error || !data || data.length === 0) return DEFAULT_CONTENT
-    return rowsToContent(data)
-  } catch (err) {
-    console.error("Failed to fetch production content:", err)
+    console.error("Failed to fetch content:", err)
     return DEFAULT_CONTENT
   }
 }
@@ -136,7 +118,7 @@ export async function updateMultipleContent(
   }
 }
 
-// Copies all staging rows to production and returns the published snapshot
+// Copies staging site_content → production site_content and returns the snapshot
 export async function publishStagingToProduction(): Promise<{
   success: boolean
   snapshot?: Array<{ key: string; value: any }>
@@ -164,7 +146,7 @@ export async function publishStagingToProduction(): Promise<{
     }))
 
     const { error: upsertError } = await productionSupabase
-      .from("production_site_content")
+      .from("site_content")
       .upsert(productionRows, { onConflict: "key" })
 
     if (upsertError) return { success: false, error: upsertError.message }
@@ -180,8 +162,8 @@ export async function saveContentVersion(
   snapshot: Array<{ key: string; value: any }>
 ): Promise<{ success: boolean; version?: string; error?: string }> {
   try {
-    const supabase = getProductionSupabase()
-    if (!supabase) return { success: false, error: "Production Supabase not configured" }
+    const supabase = getSupabase()
+    if (!supabase) return { success: false, error: "Supabase not configured" }
 
     const { data: latest } = await supabase
       .from("content_versions")
@@ -229,7 +211,7 @@ export async function saveContentVersion(
 // Returns the last 10 published versions (newest first)
 export async function getContentVersions(): Promise<ContentVersion[]> {
   try {
-    const supabase = getProductionSupabase()
+    const supabase = getSupabase()
     if (!supabase) return []
 
     const { data, error } = await supabase
@@ -245,15 +227,18 @@ export async function getContentVersions(): Promise<ContentVersion[]> {
   }
 }
 
-// Restores production content to a specific version snapshot
+// Restores production site_content to a specific version snapshot
 export async function revertToVersion(
   id: string
 ): Promise<{ success: boolean; version?: string; error?: string }> {
   try {
-    const supabase = getProductionSupabase()
-    if (!supabase) return { success: false, error: "Production Supabase not configured" }
+    const stagingSupabase = getSupabase()
+    if (!stagingSupabase) return { success: false, error: "Supabase not configured" }
 
-    const { data: versionRecord, error: fetchError } = await supabase
+    const productionSupabase = getProductionSupabase()
+    if (!productionSupabase) return { success: false, error: "Production Supabase not configured" }
+
+    const { data: versionRecord, error: fetchError } = await stagingSupabase
       .from("content_versions")
       .select("version, snapshot")
       .eq("id", id)
@@ -268,8 +253,8 @@ export async function revertToVersion(
       updated_at: new Date().toISOString(),
     }))
 
-    const { error: upsertError } = await supabase
-      .from("production_site_content")
+    const { error: upsertError } = await productionSupabase
+      .from("site_content")
       .upsert(rows, { onConflict: "key" })
 
     if (upsertError) return { success: false, error: upsertError.message }
