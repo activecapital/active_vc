@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import type { SiteContent, ApproachItem } from "@/lib/content"
+import type { SiteContent, ApproachItem, ContentVersion } from "@/lib/content"
 import { createBrowserSupabase } from "@/lib/supabase-browser"
 
 interface Message {
@@ -60,12 +60,20 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null)
   const [editorLoading, setEditorLoading] = useState(true)
 
+  // --- Version history state ---
+  const [versions, setVersions] = useState<ContentVersion[]>([])
+  const [currentVersion, setCurrentVersion] = useState<string | null>(null)
+  const [showVersionHistory, setShowVersionHistory] = useState(false)
+  const [revertingId, setRevertingId] = useState<string | null>(null)
+  const [showPublishOptions, setShowPublishOptions] = useState(false)
+
   useEffect(() => {
     const supabase = createBrowserSupabase()
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setIsAuthenticated(true)
         loadContent()
+        loadVersions()
       } else {
         setEditorLoading(false)
       }
@@ -75,6 +83,7 @@ export default function AdminPage() {
       if (event === "SIGNED_IN" && session) {
         setIsAuthenticated(true)
         loadContent()
+        loadVersions()
       } else if (event === "SIGNED_OUT") {
         setIsAuthenticated(false)
         setEditorLoading(false)
@@ -232,26 +241,71 @@ export default function AdminPage() {
     }
   }
 
-  const handlePublish = async () => {
-    if (!confirm("Publish staging changes to production?")) return
+  const loadVersions = async () => {
+    try {
+      const response = await fetch("/api/admin/versions")
+      if (response.ok) {
+        const data = await response.json()
+        setVersions(data.versions ?? [])
+        // Only set currentVersion on initial load (when null); publish/revert handlers set it explicitly
+        if (data.versions?.length > 0) {
+          setCurrentVersion((prev) => (prev === null ? data.versions[0].version : prev))
+        }
+      }
+    } catch {
+      // non-fatal
+    }
+  }
+
+  const handlePublish = async (action: "db" | "git" | "both") => {
+    const actionLabels = { db: "update database", git: "merge git branches", both: "publish (DB + git)" }
+    if (!confirm(`Confirm: ${actionLabels[action]}?`)) return
 
     const sessionId = activeId
     setChatLoading(true)
+    setShowPublishOptions(false)
     try {
-      const response = await fetch("/api/admin/publish", { method: "POST" })
+      const response = await fetch("/api/admin/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      })
       if (!response.ok) throw new Error("Failed to publish")
       const data = await response.json()
+      if (data.db?.version) setCurrentVersion(data.db.version)
+      await loadVersions()
       updateSessionMessages(sessionId, (prev) => [
         ...prev,
         { role: "system", content: `✓ ${data.message}`, timestamp: new Date().toISOString() },
       ])
-    } catch {
+    } catch (err) {
       updateSessionMessages(sessionId, (prev) => [
         ...prev,
-        { role: "system", content: "Error: Failed to publish to production", timestamp: new Date().toISOString() },
+        { role: "system", content: `Error: ${err instanceof Error ? err.message : "Failed to publish"}`, timestamp: new Date().toISOString() },
       ])
     } finally {
       setChatLoading(false)
+    }
+  }
+
+  const handleRevert = async (id: string, version: string) => {
+    if (!confirm(`Revert production to version ${version}? This will overwrite current production content.`)) return
+    setRevertingId(id)
+    try {
+      const response = await fetch("/api/admin/versions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      })
+      if (!response.ok) throw new Error("Failed to revert")
+      const data = await response.json()
+      setCurrentVersion(data.version)
+      await loadVersions()
+      setShowVersionHistory(false)
+    } catch {
+      setError("Failed to revert to version " + version)
+    } finally {
+      setRevertingId(null)
     }
   }
 
@@ -448,6 +502,16 @@ export default function AdminPage() {
         <div className="flex justify-between items-center">
           <h1 className="text-xl font-semibold text-white">Active VC Admin</h1>
           <div className="flex gap-3 items-center">
+            {currentVersion && (
+              <span className="text-xs text-zinc-500 font-mono">v{currentVersion}</span>
+            )}
+            <button
+              onClick={() => setShowVersionHistory(true)}
+              className="px-3 py-2 text-zinc-400 border border-zinc-700 rounded-lg text-sm font-medium hover:bg-zinc-800 hover:text-white transition-colors"
+              title="View version history"
+            >
+              History
+            </button>
             <a
               href={
                 typeof window !== "undefined" && window.location.hostname === "localhost"
@@ -461,7 +525,7 @@ export default function AdminPage() {
               Preview Staging ↗
             </a>
             <button
-              onClick={handlePublish}
+              onClick={() => setShowPublishOptions(true)}
               disabled={chatLoading}
               className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -651,6 +715,116 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+
+      {/* Version History Modal */}
+      {showVersionHistory && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+          onClick={() => setShowVersionHistory(false)}
+        >
+          <div
+            className="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-md mx-4 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
+              <h2 className="text-white font-semibold text-sm">Version History</h2>
+              <button
+                onClick={() => setShowVersionHistory(false)}
+                className="text-zinc-500 hover:text-white transition-colors text-lg leading-none"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="divide-y divide-zinc-800 max-h-96 overflow-y-auto">
+              {versions.length === 0 ? (
+                <div className="px-5 py-8 text-zinc-500 text-sm text-center">No versions published yet.</div>
+              ) : (
+                versions.map((v) => (
+                  <div key={v.id} className="flex items-center justify-between px-5 py-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white text-sm font-mono">v{v.version}</span>
+                        {v.version === currentVersion && (
+                          <span className="text-xs bg-green-900/50 text-green-400 border border-green-800 px-1.5 py-0.5 rounded">
+                            current
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-zinc-500 text-xs mt-0.5">
+                        {new Date(v.published_at).toLocaleString()}
+                      </div>
+                    </div>
+                    {v.version !== currentVersion && (
+                      <button
+                        onClick={() => handleRevert(v.id, v.version)}
+                        disabled={revertingId === v.id}
+                        className="px-3 py-1.5 text-xs text-amber-400 border border-amber-400/30 rounded-lg hover:bg-amber-400/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {revertingId === v.id ? "Reverting…" : "Revert"}
+                      </button>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="px-5 py-3 border-t border-zinc-800">
+              <p className="text-zinc-600 text-xs">Reverting restores the production DB to that version. Git history is not changed.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Publish Options Modal */}
+      {showPublishOptions && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+          onClick={() => setShowPublishOptions(false)}
+        >
+          <div
+            className="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-md mx-4 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
+              <h2 className="text-white font-semibold text-sm">Publish Options</h2>
+              <button
+                onClick={() => setShowPublishOptions(false)}
+                className="text-zinc-500 hover:text-white transition-colors text-lg leading-none"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-5 space-y-3">
+              <button
+                onClick={() => handlePublish("db")}
+                disabled={chatLoading}
+                className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors text-left"
+              >
+                <div className="font-semibold">Update Database</div>
+                <div className="text-xs text-blue-200 mt-1">Copy staging DB → production DB (no git merge)</div>
+              </button>
+              <button
+                onClick={() => handlePublish("git")}
+                disabled={chatLoading}
+                className="w-full px-4 py-3 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors text-left"
+              >
+                <div className="font-semibold">Merge Git Only</div>
+                <div className="text-xs text-amber-200 mt-1">Merge staging → main (no DB update)</div>
+              </button>
+              <button
+                onClick={() => handlePublish("both")}
+                disabled={chatLoading}
+                className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors text-left"
+              >
+                <div className="font-semibold">Full Publish</div>
+                <div className="text-xs text-green-200 mt-1">Update DB + Merge git + Auto-deploy</div>
+              </button>
+            </div>
+            <div className="px-5 py-3 border-t border-zinc-800 bg-zinc-800/30">
+              <p className="text-zinc-600 text-xs">Choose what to publish. Both operations are reversible (DB via History, git via manual revert).</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { getSupabase } from "./supabase"
+import { getSupabase, getProductionSupabase } from "./supabase"
 
 export interface ApproachItem {
   label: string
@@ -12,6 +12,16 @@ export interface SiteContent {
   about_active_capital: string
   approach_items: ApproachItem[]
   contact_html: string
+}
+
+export interface ContentVersion {
+  id: string
+  version: string
+  major: number
+  minor: number
+  patch: number
+  snapshot: Array<{ key: string; value: any }>
+  published_at: string
 }
 
 export const DEFAULT_CONTENT: SiteContent = {
@@ -33,34 +43,31 @@ export const DEFAULT_CONTENT: SiteContent = {
     '<p>If you\'re a founder building AI-native business software, please email: team@active.vc</p>',
 }
 
+function rowsToContent(rows: Array<{ key: string; value: any }>): SiteContent {
+  const map: Record<string, any> = {}
+  for (const row of rows) map[row.key] = row.value
+  return {
+    hero_title: map.hero_title ?? DEFAULT_CONTENT.hero_title,
+    hero_subtitle: map.hero_subtitle ?? DEFAULT_CONTENT.hero_subtitle,
+    about_pat: map.about_pat ?? DEFAULT_CONTENT.about_pat,
+    about_active_capital: map.about_active_capital ?? DEFAULT_CONTENT.about_active_capital,
+    approach_items: map.approach_items ?? DEFAULT_CONTENT.approach_items,
+    contact_html: map.contact_html ?? DEFAULT_CONTENT.contact_html,
+  }
+}
+
+// Reads from site_content — staging DB on staging/local, production DB on production Vercel
 export async function getAllContent(): Promise<SiteContent> {
   try {
     const supabase = getSupabase()
     if (!supabase) return DEFAULT_CONTENT
 
-    const { data, error } = await supabase
-      .from("site_content")
-      .select("key, value")
+    const { data, error } = await supabase.from("site_content").select("key, value")
 
-    if (error || !data || data.length === 0) {
-      return DEFAULT_CONTENT
-    }
-
-    const content: Record<string, any> = {}
-    for (const row of data) {
-      content[row.key] = row.value
-    }
-
-    return {
-      hero_title: content.hero_title ?? DEFAULT_CONTENT.hero_title,
-      hero_subtitle: content.hero_subtitle ?? DEFAULT_CONTENT.hero_subtitle,
-      about_pat: content.about_pat ?? DEFAULT_CONTENT.about_pat,
-      about_active_capital: content.about_active_capital ?? DEFAULT_CONTENT.about_active_capital,
-      approach_items: content.approach_items ?? DEFAULT_CONTENT.approach_items,
-      contact_html: content.contact_html ?? DEFAULT_CONTENT.contact_html,
-    }
+    if (error || !data || data.length === 0) return DEFAULT_CONTENT
+    return rowsToContent(data)
   } catch (err) {
-    console.error("Failed to fetch content from Supabase:", err)
+    console.error("Failed to fetch content:", err)
     return DEFAULT_CONTENT
   }
 }
@@ -80,10 +87,7 @@ export async function updateContent(
         { onConflict: "key" }
       )
 
-    if (error) {
-      return { success: false, error: error.message }
-    }
-
+    if (error) return { success: false, error: error.message }
     return { success: true }
   } catch (err) {
     return { success: false, error: (err as Error).message }
@@ -107,11 +111,155 @@ export async function updateMultipleContent(
       .from("site_content")
       .upsert(rows, { onConflict: "key" })
 
-    if (error) {
-      return { success: false, error: error.message }
+    if (error) return { success: false, error: error.message }
+    return { success: true }
+  } catch (err) {
+    return { success: false, error: (err as Error).message }
+  }
+}
+
+// Copies staging site_content → production site_content and returns the snapshot
+export async function publishStagingToProduction(): Promise<{
+  success: boolean
+  snapshot?: Array<{ key: string; value: any }>
+  error?: string
+}> {
+  try {
+    const stagingSupabase = getSupabase()
+    if (!stagingSupabase) return { success: false, error: "Staging Supabase not configured" }
+
+    const productionSupabase = getProductionSupabase()
+    if (!productionSupabase) return { success: false, error: "Production Supabase not configured (PRODUCTION_SUPABASE_URL / PRODUCTION_SUPABASE_SERVICE_ROLE_KEY missing)" }
+
+    const { data: stagingRows, error: fetchError } = await stagingSupabase
+      .from("site_content")
+      .select("key, value")
+
+    if (fetchError) return { success: false, error: fetchError.message }
+    if (!stagingRows || stagingRows.length === 0) {
+      return { success: false, error: "No staging content found" }
     }
 
-    return { success: true }
+    const productionRows = stagingRows.map((row) => ({
+      ...row,
+      updated_at: new Date().toISOString(),
+    }))
+
+    const { error: upsertError } = await productionSupabase
+      .from("site_content")
+      .upsert(productionRows, { onConflict: "key" })
+
+    if (upsertError) return { success: false, error: upsertError.message }
+
+    return { success: true, snapshot: stagingRows }
+  } catch (err) {
+    return { success: false, error: (err as Error).message }
+  }
+}
+
+// Returns the next semver string and saves a version record; keeps last 10 versions
+export async function saveContentVersion(
+  snapshot: Array<{ key: string; value: any }>
+): Promise<{ success: boolean; version?: string; error?: string }> {
+  try {
+    const supabase = getSupabase()
+    if (!supabase) return { success: false, error: "Supabase not configured" }
+
+    const { data: latest } = await supabase
+      .from("content_versions")
+      .select("major, minor, patch")
+      .order("published_at", { ascending: false })
+      .limit(1)
+      .single()
+
+    let major = 1, minor = 0, patch = 0
+    if (latest) {
+      major = latest.major
+      minor = latest.minor
+      patch = latest.patch + 1
+    }
+
+    const version = `${major}.${minor}.${patch}`
+
+    const { error: insertError } = await supabase.from("content_versions").insert({
+      version,
+      major,
+      minor,
+      patch,
+      snapshot,
+    })
+
+    if (insertError) return { success: false, error: insertError.message }
+
+    // Prune versions beyond the most recent 10
+    const { data: allVersions } = await supabase
+      .from("content_versions")
+      .select("id")
+      .order("published_at", { ascending: false })
+
+    if (allVersions && allVersions.length > 10) {
+      const toDelete = allVersions.slice(10).map((v) => v.id)
+      await supabase.from("content_versions").delete().in("id", toDelete)
+    }
+
+    return { success: true, version }
+  } catch (err) {
+    return { success: false, error: (err as Error).message }
+  }
+}
+
+// Returns the last 10 published versions (newest first)
+export async function getContentVersions(): Promise<ContentVersion[]> {
+  try {
+    const supabase = getSupabase()
+    if (!supabase) return []
+
+    const { data, error } = await supabase
+      .from("content_versions")
+      .select("id, version, major, minor, patch, snapshot, published_at")
+      .order("published_at", { ascending: false })
+      .limit(10)
+
+    if (error || !data) return []
+    return data as ContentVersion[]
+  } catch {
+    return []
+  }
+}
+
+// Restores production site_content to a specific version snapshot
+export async function revertToVersion(
+  id: string
+): Promise<{ success: boolean; version?: string; error?: string }> {
+  try {
+    const stagingSupabase = getSupabase()
+    if (!stagingSupabase) return { success: false, error: "Supabase not configured" }
+
+    const productionSupabase = getProductionSupabase()
+    if (!productionSupabase) return { success: false, error: "Production Supabase not configured" }
+
+    const { data: versionRecord, error: fetchError } = await stagingSupabase
+      .from("content_versions")
+      .select("version, snapshot")
+      .eq("id", id)
+      .single()
+
+    if (fetchError || !versionRecord) {
+      return { success: false, error: "Version not found" }
+    }
+
+    const rows = (versionRecord.snapshot as Array<{ key: string; value: any }>).map((row) => ({
+      ...row,
+      updated_at: new Date().toISOString(),
+    }))
+
+    const { error: upsertError } = await productionSupabase
+      .from("site_content")
+      .upsert(rows, { onConflict: "key" })
+
+    if (upsertError) return { success: false, error: upsertError.message }
+
+    return { success: true, version: versionRecord.version }
   } catch (err) {
     return { success: false, error: (err as Error).message }
   }

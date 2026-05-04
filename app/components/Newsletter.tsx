@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, FormEvent, ChangeEvent } from 'react'
+import { useState, type ChangeEvent, type SyntheticEvent } from 'react'
 import { track } from '@vercel/analytics'
 import { sha256 } from '../src/utils/hashString'
 
@@ -15,7 +15,7 @@ const containerStyles = `grid grid-cols-1
 
 const baseInputFieldStyles = `block w-full
     rounded-md border py-2 pl-10 pr-3
-    shadow-sm sm:text-sm
+    shadow-2xs sm:text-sm
     bg-[rgba(255,255,255,0.05)]
     text-white placeholder-gray-400
     focus:border-white focus:ring-indigo-500`
@@ -30,7 +30,7 @@ const Newsletter = () => {
   const [isSubmittedAndSuccessful, setIsSubmittedAndSuccessful] = useState<boolean>(false)
   const [submissionMessage, setSubmissionMessage] = useState<string>('') // This will now ONLY be for errors
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     setFirstNameError('')
