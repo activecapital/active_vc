@@ -299,8 +299,8 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       })
-      if (!response.ok) throw new Error("Failed to publish")
       const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "Failed to publish")
       if (data.db?.version) setCurrentVersion(data.db.version)
       await loadVersions()
       updateSessionMessages(sessionId, (prev) => [
