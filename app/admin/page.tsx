@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import type { SiteContent, ApproachItem, ContentVersion } from "@/lib/content"
 import { createBrowserSupabase } from "@/lib/supabase-browser"
+import { COUNTRIES, DEFAULT_COUNTRY, type Country } from "../src/countryCodes"
 
 interface Message {
   role: "user" | "assistant" | "system"
@@ -41,6 +42,23 @@ export default function AdminPage() {
   const [otpCode, setOtpCode] = useState("")
   const [loginLoading, setLoginLoading] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
+
+  // Phone country code state
+  const [selectedCountry, setSelectedCountry] = useState<Country>(DEFAULT_COUNTRY)
+  const [phoneDigits, setPhoneDigits] = useState("")
+  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false)
+  const [countrySearch, setCountrySearch] = useState("")
+  const countryDropdownRef = useRef<HTMLDivElement>(null)
+  const fullPhone = selectedCountry.dial + phoneDigits
+  const filteredCountries = useMemo(() => {
+    const q = countrySearch.toLowerCase()
+    if (!q) return COUNTRIES
+    return COUNTRIES.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.dial.includes(q) ||
+      c.code.toLowerCase().includes(q)
+    )
+  }, [countrySearch])
 
   // --- AI Chat state ---
   const [sessions, setSessions] = useState<ChatSession[]>(() => [createSession()])
@@ -98,6 +116,17 @@ export default function AdminPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(e.target as Node)) {
+        setCountryDropdownOpen(false)
+        setCountrySearch("")
+      }
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [])
+
   // --- Session helpers ---
   const updateSessionMessages = (
     id: string,
@@ -141,7 +170,7 @@ export default function AdminPage() {
       const body =
         loginType === "email"
           ? { type: "email", email: loginValue }
-          : { type: "phone", phone: loginValue }
+          : { type: "phone", phone: fullPhone }
 
       const res = await fetch("/api/admin/auth", {
         method: "POST",
@@ -161,7 +190,7 @@ export default function AdminPage() {
         if (error) throw error
         setLoginStep("sent")
       } else {
-        const { error } = await supabase.auth.signInWithOtp({ phone: loginValue })
+        const { error } = await supabase.auth.signInWithOtp({ phone: fullPhone })
         if (error) throw error
         setLoginStep("code")
       }
@@ -180,7 +209,7 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/auth/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: loginValue, token: otpCode }),
+        body: JSON.stringify({ phone: fullPhone, token: otpCode }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? "Verification failed")
@@ -396,13 +425,13 @@ export default function AdminPage() {
           {/* Method toggle */}
           <div className="flex rounded-lg bg-zinc-900 border border-zinc-800 p-1 mb-6">
             <button
-              onClick={() => { setLoginType("email"); setLoginStep("input"); setLoginError(null); setLoginValue("") }}
+              onClick={() => { setLoginType("email"); setLoginStep("input"); setLoginError(null); setLoginValue(""); setPhoneDigits("") }}
               className={`flex-1 py-2 text-sm rounded-md transition-colors ${loginType === "email" ? "bg-white text-black font-medium" : "text-zinc-400 hover:text-white"}`}
             >
               Email Link
             </button>
             <button
-              onClick={() => { setLoginType("phone"); setLoginStep("input"); setLoginError(null); setLoginValue("") }}
+              onClick={() => { setLoginType("phone"); setLoginStep("input"); setLoginError(null); setLoginValue(""); setPhoneDigits(""); setCountryDropdownOpen(false); setCountrySearch("") }}
               className={`flex-1 py-2 text-sm rounded-md transition-colors ${loginType === "phone" ? "bg-white text-black font-medium" : "text-zinc-400 hover:text-white"}`}
             >
               Text Code
@@ -429,19 +458,63 @@ export default function AdminPage() {
                   className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
                 />
               ) : (
-                <input
-                  type="tel"
-                  value={loginValue}
-                  onChange={(e) => setLoginValue(e.target.value)}
-                  placeholder="+12184602308"
-                  required
-                  autoFocus
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
-                />
+                <div className="flex gap-2">
+                  <div ref={countryDropdownRef} className="relative shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => { setCountryDropdownOpen(o => !o); setCountrySearch("") }}
+                      className="flex items-center gap-1.5 px-3 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white hover:border-zinc-600 focus:outline-none focus:border-zinc-600 whitespace-nowrap"
+                    >
+                      <img src={`https://flagcdn.com/20x15/${selectedCountry.code.toLowerCase()}.png`} alt={selectedCountry.code} width={20} height={15} className="rounded-sm" />
+                      <span className="text-sm text-zinc-400">{selectedCountry.dial}</span>
+                      <span className="text-zinc-600 text-xs">▼</span>
+                    </button>
+                    {countryDropdownOpen && (
+                      <div className="absolute z-50 top-full left-0 mt-1 w-72 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl overflow-hidden">
+                        <div className="p-2 border-b border-zinc-800">
+                          <input
+                            type="text"
+                            value={countrySearch}
+                            onChange={(e) => setCountrySearch(e.target.value)}
+                            placeholder="Search country…"
+                            autoFocus
+                            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
+                          />
+                        </div>
+                        <div className="max-h-52 overflow-y-auto">
+                          {filteredCountries.map(c => (
+                            <button
+                              key={c.code}
+                              type="button"
+                              onClick={() => { setSelectedCountry(c); setCountryDropdownOpen(false); setCountrySearch("") }}
+                              className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-800 text-left transition-colors ${c.code === selectedCountry.code ? "bg-zinc-800 text-white" : "text-zinc-300"}`}
+                            >
+                              <img src={`https://flagcdn.com/20x15/${c.code.toLowerCase()}.png`} alt={c.code} width={20} height={15} className="rounded-sm shrink-0" />
+                              <span className="flex-1 truncate">{c.name}</span>
+                              <span className="text-zinc-500 shrink-0">{c.dial}</span>
+                            </button>
+                          ))}
+                          {filteredCountries.length === 0 && (
+                            <div className="px-3 py-4 text-zinc-500 text-sm text-center">No countries found</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    type="tel"
+                    value={phoneDigits}
+                    onChange={(e) => setPhoneDigits(e.target.value.replace(/\D/g, ""))}
+                    placeholder="2184602308"
+                    required
+                    autoFocus
+                    className="flex-1 min-w-0 px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
+                  />
+                </div>
               )}
               <button
                 type="submit"
-                disabled={loginLoading || !loginValue.trim()}
+                disabled={loginLoading || (loginType === "phone" ? !phoneDigits.trim() : !loginValue.trim())}
                 className="w-full px-4 py-3 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loginLoading ? "Sending…" : loginType === "email" ? "Send Login Link" : "Send Code"}
@@ -464,7 +537,7 @@ export default function AdminPage() {
           {/* Step: enter SMS code */}
           {loginStep === "code" && (
             <form onSubmit={handleVerifyOtp} className="space-y-4">
-              <p className="text-zinc-400 text-sm text-center">Enter the code sent to <span className="text-white">{loginValue}</span></p>
+              <p className="text-zinc-400 text-sm text-center">Enter the code sent to <span className="text-white">{fullPhone}</span></p>
               <input
                 type="text"
                 inputMode="numeric"
