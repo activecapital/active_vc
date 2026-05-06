@@ -83,7 +83,6 @@ export default function AdminPage() {
   const [currentVersion, setCurrentVersion] = useState<string | null>(null)
   const [showVersionHistory, setShowVersionHistory] = useState(false)
   const [revertingId, setRevertingId] = useState<string | null>(null)
-  const [showPublishOptions, setShowPublishOptions] = useState(false)
 
   useEffect(() => {
     const supabase = createBrowserSupabase()
@@ -286,18 +285,16 @@ export default function AdminPage() {
     }
   }
 
-  const handlePublish = async (action: "db" | "git" | "both") => {
-    const actionLabels = { db: "update database", git: "merge git branches", both: "publish (DB + git)" }
-    if (!confirm(`Confirm: ${actionLabels[action]}?`)) return
+  const handlePublish = async () => {
+    if (!confirm("Are you sure you want to publish the current changes?")) return
 
     const sessionId = activeId
     setChatLoading(true)
-    setShowPublishOptions(false)
     try {
       const response = await fetch("/api/admin/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action }),
+        body: JSON.stringify({ action: "db" }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || "Failed to publish")
@@ -598,7 +595,7 @@ export default function AdminPage() {
               Preview Staging ↗
             </a>
             <button
-              onClick={() => setShowPublishOptions(true)}
+              onClick={handlePublish}
               disabled={chatLoading}
               className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -842,58 +839,6 @@ export default function AdminPage() {
             </div>
             <div className="px-5 py-3 border-t border-zinc-800">
               <p className="text-zinc-600 text-xs">Reverting restores the production DB to that version. Git history is not changed.</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Publish Options Modal */}
-      {showPublishOptions && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-          onClick={() => setShowPublishOptions(false)}
-        >
-          <div
-            className="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-md mx-4 overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
-              <h2 className="text-white font-semibold text-sm">Publish Options</h2>
-              <button
-                onClick={() => setShowPublishOptions(false)}
-                className="text-zinc-500 hover:text-white transition-colors text-lg leading-none"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="p-5 space-y-3">
-              <button
-                onClick={() => handlePublish("db")}
-                disabled={chatLoading}
-                className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors text-left"
-              >
-                <div className="font-semibold">Update Database</div>
-                <div className="text-xs text-blue-200 mt-1">Copy staging DB → production DB (no git merge)</div>
-              </button>
-              <button
-                onClick={() => handlePublish("git")}
-                disabled={chatLoading}
-                className="w-full px-4 py-3 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors text-left"
-              >
-                <div className="font-semibold">Merge Git Only</div>
-                <div className="text-xs text-amber-200 mt-1">Merge staging → main (no DB update)</div>
-              </button>
-              <button
-                onClick={() => handlePublish("both")}
-                disabled={chatLoading}
-                className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors text-left"
-              >
-                <div className="font-semibold">Full Publish</div>
-                <div className="text-xs text-green-200 mt-1">Update DB + Merge git + Auto-deploy</div>
-              </button>
-            </div>
-            <div className="px-5 py-3 border-t border-zinc-800 bg-zinc-800/30">
-              <p className="text-zinc-600 text-xs">Choose what to publish. Both operations are reversible (DB via History, git via manual revert).</p>
             </div>
           </div>
         </div>
