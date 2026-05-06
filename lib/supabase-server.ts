@@ -9,10 +9,10 @@ export async function createServerSupabase() {
   const isProd = process.env.VERCEL_ENV === "production"
   const url = isProd
     ? process.env.NEXT_PUBLIC_PRODUCTION_SUPABASE_URL!
-    : process.env.NEXT_PUBLIC_SUPABASE_URL!
+    : process.env.NEXT_PUBLIC_STAGING_SUPABASE_URL!
   const anonKey = isProd
     ? process.env.NEXT_PUBLIC_PRODUCTION_SUPABASE_ANON_KEY!
-    : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    : process.env.NEXT_PUBLIC_STAGING_SUPABASE_ANON_KEY!
 
   return createServerClient(
     url,

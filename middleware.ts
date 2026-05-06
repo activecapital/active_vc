@@ -10,10 +10,10 @@ export async function middleware(request: NextRequest) {
   const isProd = process.env.VERCEL_ENV === "production"
   const supabaseUrl = isProd
     ? process.env.NEXT_PUBLIC_PRODUCTION_SUPABASE_URL!
-    : process.env.NEXT_PUBLIC_SUPABASE_URL!
+    : process.env.NEXT_PUBLIC_STAGING_SUPABASE_URL!
   const supabaseAnonKey = isProd
     ? process.env.NEXT_PUBLIC_PRODUCTION_SUPABASE_ANON_KEY!
-    : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    : process.env.NEXT_PUBLIC_STAGING_SUPABASE_ANON_KEY!
 
   if (supabaseAnonKey) {
     const supabase = createServerClient(

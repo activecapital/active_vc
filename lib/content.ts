@@ -145,7 +145,7 @@ export async function publishStagingToProduction(): Promise<{
     if (!stagingSupabase) return { success: false, error: "Staging Supabase not configured" }
 
     const productionSupabase = getProductionSupabase()
-    if (!productionSupabase) return { success: false, error: "Production Supabase not configured (PRODUCTION_SUPABASE_URL / PRODUCTION_SUPABASE_SERVICE_ROLE_KEY missing)" }
+    if (!productionSupabase) return { success: false, error: "Production Supabase not configured (NEXT_PUBLIC_PRODUCTION_SUPABASE_URL / PRODUCTION_SUPABASE_SERVICE_ROLE_KEY missing)" }
 
     const { data: stagingRows, error: fetchError } = await stagingSupabase
       .from("site_content")

@@ -20,12 +20,12 @@ Do NOT create a custom `ENV` variable. Rely on `VERCEL_ENV` for all environment 
 
 | Variable | Purpose |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Staging Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Staging Supabase anon key (for browser/SSR auth) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Staging Supabase service-role key (server-side admin) |
-| `PRODUCTION_SUPABASE_URL` | Production Supabase project URL |
+| `NEXT_PUBLIC_STAGING_SUPABASE_URL` | Staging Supabase project URL |
+| `NEXT_PUBLIC_STAGING_SUPABASE_ANON_KEY` | Staging Supabase anon key (for browser/SSR auth) |
+| `STAGING_SUPABASE_SERVICE_ROLE_KEY` | Staging Supabase service-role key (server-side admin) |
+| `NEXT_PUBLIC_PRODUCTION_SUPABASE_URL` | Production Supabase project URL |
+| `NEXT_PUBLIC_PRODUCTION_SUPABASE_ANON_KEY` | Production Supabase anon key (for browser/SSR auth in production) |
 | `PRODUCTION_SUPABASE_SERVICE_ROLE_KEY` | Production Supabase service-role key (server-side admin) |
-| `PRODUCTION_SUPABASE_ANON_KEY` | Production Supabase anon key (for browser/SSR auth in production) |
 
 ---
 
@@ -36,7 +36,7 @@ Do NOT create a custom `ENV` variable. Rely on `VERCEL_ENV` for all environment 
 **Always connects to the STAGING database**, regardless of environment.
 
 - The admin editor reads from and saves to the staging DB.
-- Uses `NEXT_PUBLIC_SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`.
+- Uses `NEXT_PUBLIC_STAGING_SUPABASE_URL` / `STAGING_SUPABASE_SERVICE_ROLE_KEY`.
 
 ### 2. Website / Public Components (`app/components/`)
 
@@ -44,28 +44,28 @@ Depends on environment:
 
 | Environment | Database | Variables Used |
 |---|---|---|
-| **local** | Staging | `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
-| **staging** | Staging | `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
-| **production** | Production | `PRODUCTION_SUPABASE_URL` / `PRODUCTION_SUPABASE_ANON_KEY` |
+| **local** | Staging | `NEXT_PUBLIC_STAGING_SUPABASE_URL` / `NEXT_PUBLIC_STAGING_SUPABASE_ANON_KEY` |
+| **staging** | Staging | `NEXT_PUBLIC_STAGING_SUPABASE_URL` / `NEXT_PUBLIC_STAGING_SUPABASE_ANON_KEY` |
+| **production** | Production | `NEXT_PUBLIC_PRODUCTION_SUPABASE_URL` / `NEXT_PUBLIC_PRODUCTION_SUPABASE_ANON_KEY` |
 
 When building Supabase clients for public-facing components (browser or server), check `VERCEL_ENV`:
 
 ```ts
 const isProduction = process.env.VERCEL_ENV === "production"
 const url = isProduction
-  ? process.env.PRODUCTION_SUPABASE_URL!
-  : process.env.NEXT_PUBLIC_SUPABASE_URL!
+  ? process.env.NEXT_PUBLIC_PRODUCTION_SUPABASE_URL!
+  : process.env.NEXT_PUBLIC_STAGING_SUPABASE_URL!
 const anonKey = isProduction
-  ? process.env.PRODUCTION_SUPABASE_ANON_KEY!
-  : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  ? process.env.NEXT_PUBLIC_PRODUCTION_SUPABASE_ANON_KEY!
+  : process.env.NEXT_PUBLIC_STAGING_SUPABASE_ANON_KEY!
 ```
 
 ### 3. Publish API (`app/api/admin/publish/`)
 
 Copies data **from the staging DB to the production DB**.
 
-- Reads from `NEXT_PUBLIC_SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` (staging).
-- Writes to `PRODUCTION_SUPABASE_URL` / `PRODUCTION_SUPABASE_SERVICE_ROLE_KEY` (production).
+- Reads from `NEXT_PUBLIC_STAGING_SUPABASE_URL` / `STAGING_SUPABASE_SERVICE_ROLE_KEY` (staging).
+- Writes to `NEXT_PUBLIC_PRODUCTION_SUPABASE_URL` / `PRODUCTION_SUPABASE_SERVICE_ROLE_KEY` (production).
 - Both clients are always needed regardless of environment.
 
 ### 4. Admin Auth (`app/api/admin/auth/`)
@@ -85,7 +85,7 @@ Use the same `VERCEL_ENV` check to pick the correct Supabase URL and key for aut
 **Always connects to the STAGING database**, regardless of environment.
 
 - AI-driven content edits always target the staging DB.
-- Uses `NEXT_PUBLIC_SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`.
+- Uses `NEXT_PUBLIC_STAGING_SUPABASE_URL` / `STAGING_SUPABASE_SERVICE_ROLE_KEY`.
 - This ensures AI changes go through the staging → publish → production workflow.
 
 ---
@@ -107,5 +107,4 @@ Use the same `VERCEL_ENV` check to pick the correct Supabase URL and key for aut
 - **`lib/supabase.ts`**: Contains `getSupabase()` (staging) and `getProductionSupabase()` (production) server-side clients using service-role keys. Use these in API routes.
 - **`lib/supabase-browser.ts`**: Browser client — must be environment-aware for public components (staging locally/preview, production in prod).
 - **`lib/supabase-server.ts`**: SSR client — must also be environment-aware for public pages.
-- Never expose service-role keys to the browser. `PRODUCTION_SUPABASE_URL` and `PRODUCTION_SUPABASE_SERVICE_ROLE_KEY` are server-only (no `NEXT_PUBLIC_` prefix).
-- `PRODUCTION_SUPABASE_ANON_KEY` may need a `NEXT_PUBLIC_` prefix if used in browser components on production. Evaluate whether public components use browser or server rendering to decide.
+- Never expose service-role keys to the browser. `STAGING_SUPABASE_SERVICE_ROLE_KEY` and `PRODUCTION_SUPABASE_SERVICE_ROLE_KEY` are server-only (no `NEXT_PUBLIC_` prefix).
