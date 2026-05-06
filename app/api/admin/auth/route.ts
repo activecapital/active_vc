@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { rateLimit, rateLimitConfigs } from "@/lib/rate-limit"
-import { getSupabase } from "@/lib/supabase"
+import { getAuthSupabase } from "@/lib/supabase"
 
 // POST { type: "email", email: string }
 //   or { type: "phone", phone: string }   (E.164 format: "+12184602308")
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid login type" }, { status: 400 })
     }
 
-    const supabase = getSupabase()
+    const supabase = getAuthSupabase()
     if (!supabase) {
       return NextResponse.json({ error: "Database not configured" }, { status: 500 })
     }
