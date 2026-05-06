@@ -1,5 +1,5 @@
 import { Lexend_Deca } from 'next/font/google'
-import { getAllContent } from '@/lib/content'
+import { getPublicContent } from '@/lib/content'
 
 const fontLexendDeca = Lexend_Deca({
   weight: ['600', '700'],
@@ -9,7 +9,7 @@ const fontLexendDeca = Lexend_Deca({
 const containerClasses = `p-4 md:p-8 text-center flex flex-col items-center justify-center`
 
 const TopHeroCard = async () => {
-  const content = await getAllContent()
+  const content = await getPublicContent()
   const heroTitle = content.hero_title
   const heroSubtitle = content.hero_subtitle
 
@@ -21,7 +21,7 @@ const TopHeroCard = async () => {
   >
 
     <h1
-      className={`${fontLexendDeca.className} text-white text-[34px] sm:text-[48px] md:text-[56px] leading-[42px] sm:leading-[56px] md:leading-[74px]`}
+      className={`${fontLexendDeca.className} text-white text-[32px] sm:text-[40px] md:text-[52px] lg:text-[60px] xl:text-[68px] leading-[40px] sm:leading-[50px] md:leading-[64px] lg:leading-[74px] xl:leading-[84px] max-w-[15em] [text-wrap:balance]`}
       dangerouslySetInnerHTML={{ __html: heroTitle }}
     />
 

@@ -1,4 +1,4 @@
-import { getSupabase, getProductionSupabase } from "./supabase"
+import { getSupabase, getProductionSupabase, getPublicSupabase } from "./supabase"
 
 export interface ApproachItem {
   label: string
@@ -56,7 +56,7 @@ function rowsToContent(rows: Array<{ key: string; value: any }>): SiteContent {
   }
 }
 
-// Reads from site_content — staging DB on staging/local, production DB on production Vercel
+// Reads from staging DB — used by admin editor, chat, and other admin APIs
 export async function getAllContent(): Promise<SiteContent> {
   try {
     const supabase = getSupabase()
@@ -68,6 +68,22 @@ export async function getAllContent(): Promise<SiteContent> {
     return rowsToContent(data)
   } catch (err) {
     console.error("Failed to fetch content:", err)
+    return DEFAULT_CONTENT
+  }
+}
+
+// Reads from production DB in production, staging DB otherwise — used by public components
+export async function getPublicContent(): Promise<SiteContent> {
+  try {
+    const supabase = getPublicSupabase()
+    if (!supabase) return DEFAULT_CONTENT
+
+    const { data, error } = await supabase.from("site_content").select("key, value")
+
+    if (error || !data || data.length === 0) return DEFAULT_CONTENT
+    return rowsToContent(data)
+  } catch (err) {
+    console.error("Failed to fetch public content:", err)
     return DEFAULT_CONTENT
   }
 }
@@ -129,7 +145,7 @@ export async function publishStagingToProduction(): Promise<{
     if (!stagingSupabase) return { success: false, error: "Staging Supabase not configured" }
 
     const productionSupabase = getProductionSupabase()
-    if (!productionSupabase) return { success: false, error: "Production Supabase not configured (PRODUCTION_SUPABASE_URL / PRODUCTION_SUPABASE_SERVICE_ROLE_KEY missing)" }
+    if (!productionSupabase) return { success: false, error: "Production Supabase not configured (NEXT_PUBLIC_PRODUCTION_SUPABASE_URL / PRODUCTION_SUPABASE_SERVICE_ROLE_KEY missing)" }
 
     const { data: stagingRows, error: fetchError } = await stagingSupabase
       .from("site_content")
