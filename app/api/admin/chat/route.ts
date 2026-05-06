@@ -225,7 +225,7 @@ Be concise and proactive. Make changes confidently when requested.`
 
     for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
       const response = await anthropic.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-opus-4-6",
         max_tokens: 4096,
         system: systemPrompt,
         tools,
