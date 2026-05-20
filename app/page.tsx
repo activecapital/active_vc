@@ -105,7 +105,7 @@ export default function Home() {
           ${faintBorder} rounded-[24px] mt-8`}>
         <div className={`${aboutMsgImgContainer}`}>
           <Link href={`https://patmatthews.com`} onClick={patAvatarClicked} target="_blank">
-            <Image src="/img/pat-matthews.png" width={800} height={800} alt="Pat Matthews" className={`${aboutImgStyles}`} />
+            <Image src="/img/photos/pat-matthews_2026.png" width={800} height={800} alt="Pat Matthews" className={`${aboutImgStyles}`} />
           </Link>
         </div>
         <div className={`${aboutMsgTextContainer}`} dangerouslySetInnerHTML={{ __html: aboutPatText }} />

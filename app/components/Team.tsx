@@ -76,7 +76,7 @@ const Team = () => {
     {
       fullname: "Pat Matthews",
       title: "Founder & CEO",
-      img: "/img/photos/pat-matthews.png",
+      img: "/img/photos/pat-matthews_2026.png",
       url: "https://patmatthews.com",
       email: "pat@active.vc",
       linkedin: "https://www.linkedin.com/in/pat-matthews/",
