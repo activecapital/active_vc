@@ -13,10 +13,10 @@ const fontPoppins = Poppins({
 
 const Advisors = () => {
 
-  const teamContainerStyles = `grid grid-cols-1 md:grid-cols-2 lg:mx-[130px]
-    gap-4 lg:gap-8`
+  const teamContainerStyles = `grid grid-cols-1 md:grid-cols-3 lg:mx-[130px]
+    gap-3 lg:gap-4`
 
-  const memberCardStyles = `px-8 py-8 relative flex flex-col w-full
+  const memberCardStyles = `px-8 py-8 relative flex flex-col w-full h-full
     ${faintBorder} rounded-[24px]`
 
   const memberImageStyles = `rounded-full max-w-[124px] max-h-[124px] lg:max-w-[144px] lg:max-h-[144px] mx-auto`
@@ -38,6 +38,7 @@ const Advisors = () => {
     'pat_c': 'https://www.linkedin.com/in/pcondon/',
     'matt_b': 'https://www.linkedin.com/in/matt-bradley-0413726/',
     'chris_saum': 'https://www.linkedin.com/in/chris-saum-84938047/',
+    'kevin_m': 'https://www.linkedin.com/in/kevinminnick/',
   }
 
   return <div className={teamContainerStyles}>
@@ -77,6 +78,24 @@ const Advisors = () => {
         </div>
 
         <div className={titleStyles}>Co-Founder, Rackspace</div>
+      </div>
+    </Link>
+
+     {/* Kevin Minnick */}
+     <Link href={advisorUrls.pat_c} target="_blank"
+      onClick={() => { advisorClicked('Kevin Minnick', advisorUrls.pat_c) }}>
+      <div className={memberCardStyles}>
+        <div className="flex justify-center items-center mb-4">
+          <div className={`relative w-screen`}>
+            <Image src={`/img/photos/kevin-minnick.png`} width={532} height={544} alt="Kevin Minnick" className={memberImageStyles} />
+          </div>
+        </div>
+
+        <div className={fullnameStyles}>
+          Kevin Minnick
+        </div>
+
+        <div className={titleStyles}>Co-Founder, Webmail</div>
       </div>
     </Link>
 

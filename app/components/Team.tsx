@@ -68,7 +68,7 @@ const ContactLink: React.FC<ContactLinkProps> = ({ type, link }) => {
 
 const Team = () => {
   const memberCardStyles = `px-8 py-8 relative flex flex-col w-full ${faintBorder} rounded-[24px] h-[320px]`;
-  const memberImageStyles = `rounded-full max-w-[124px] max-h-[124px] lg:max-w-[144px] lg:max-h-[144px] mx-auto`;
+  const memberImageStyles = `rounded-full w-[124px] h-[124px] lg:w-[144px] lg:h-[144px] object-cover mx-auto`;
   const fullnameStyles = `text-center text-white hover:opacity-75 whitespace-nowrap overflow-hidden ${fontPoppins.className} ${hoverDimmed}`;
   const titleStyles = `text-center text-[16px] leading-6`;
 
@@ -76,7 +76,8 @@ const Team = () => {
     {
       fullname: "Pat Matthews",
       title: "Founder & CEO",
-      img: "/img/photos/pat-matthews_2026.png",
+      // img: "/img/photos/pat-matthews_2026.png",
+      img: "/img/photos/patrick-matthews-bw-2026.png",
       url: "https://patmatthews.com",
       email: "pat@active.vc",
       linkedin: "https://www.linkedin.com/in/pat-matthews/",
@@ -85,7 +86,8 @@ const Team = () => {
     {
       fullname: "Cat Dizon",
       title: "Co-founder & CFO",
-      img: "/img/photos/cat-dizon.png",
+      // img: "/img/photos/cat-dizon.png",
+      img: "/img/photos/cat-dizon-bw-2026.png",
       url: "https://www.linkedin.com/in/cat-dizon-43ab858/",
       email: "cat@active.vc",
       linkedin: "https://www.linkedin.com/in/cat-dizon-43ab858/",
@@ -94,38 +96,30 @@ const Team = () => {
     {
       fullname: "Chris Saum",
       title: "Partner & Investor",
-      img: "/img/photos/chris-saum.png",
+      // img: "/img/photos/chris-saum.png",
+      img: "/img/photos/chris-saum-bw-2026.png",
       url: "https://www.linkedin.com/in/chris-saum-84938047/",
       email: "chris@active.vc",
       linkedin: "https://www.linkedin.com/in/chris-saum-84938047/",
       twitter: "https://x.com/christophersaum",
     },
     {
-      fullname: "Avery Keller",
-      title: "Executive Admin",
-      img: "/img/photos/avery-keller.png",
-      url: "https://www.linkedin.com/in/averykellermeyer/",
-      email: "",
-      linkedin: "",
-      twitter: "",
+      fullname: "Sierra Aten",
+      title: "Executive Assistant",
+      img: "/img/photos/sierra-aten-bw-2026.png",
+      url: "https://www.linkedin.com/in/sierra-aten-606263254/",
+      email: "sierra@active.vc",
+      linkedin: "https://www.linkedin.com/in/sierra-aten-606263254/",
+      twitter: "https://x.com/sierraaten",
     },
     {
-      fullname: "Kevin Minnick",
-      title: "Technical Advisor",
-      img: "/img/photos/kevin-minnick.png",
-      url: "https://www.linkedin.com/in/kevinminnick/",
-      email: "",
-      linkedin: "",
-      twitter: "",
-    },
-    {
-      fullname: "Bethany Stachenfeld",
-      title: "Entrepreneur In Residence",
-      img: "/img/photos/bethany-stachenfeld.png",
+      fullname: "Huey Ly",
+      title: "AI Engineer",
+      img: "/img/photos/huey-ly-bw-2026.png",
       url: "linkedin.com/in/bethany-stachenfeld",
-      email: "",
-      linkedin: "",
-      twitter: "",
+      email: "huey@active.vc",
+      linkedin: "https://www.linkedin.com/in/huey-ly-3a215b125/",
+      twitter: "https://x.com/hueyly",
     }
   ];
 
