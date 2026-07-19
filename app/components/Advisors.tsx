@@ -82,7 +82,7 @@ const Advisors = () => {
     </Link>
 
      {/* Kevin Minnick */}
-     <Link href={advisorUrls.pat_c} target="_blank"
+     <Link href={advisorUrls.kevin_m} target="_blank"
       onClick={() => { advisorClicked('Kevin Minnick', advisorUrls.pat_c) }}>
       <div className={memberCardStyles}>
         <div className="flex justify-center items-center mb-4">

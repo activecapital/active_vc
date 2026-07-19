@@ -118,7 +118,7 @@ const Team = () => {
       img: "/img/photos/huey-ly-bw-2026.png",
       url: "linkedin.com/in/bethany-stachenfeld",
       email: "huey@active.vc",
-      linkedin: "https://www.linkedin.com/in/huey-ly-3a215b125/",
+      linkedin: "https://www.linkedin.com/in/huey-ly/",
       twitter: "https://x.com/hueyly",
     }
   ];
