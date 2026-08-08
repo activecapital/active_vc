@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server"
 
 const SESSION_MAX_AGE_HOURS = 1
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const isProd = process.env.VERCEL_ENV === "production"
