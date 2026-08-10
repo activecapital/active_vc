@@ -11,7 +11,11 @@ const containerClasses = `p-4 md:p-8 text-center flex flex-col items-center just
 const TopHeroCard = async () => {
   const content = await getPublicContent()
   const heroTitle = content.hero_title
-  const heroSubtitle = content.hero_subtitle
+  // On xs screens, swap authored <br/> tags for spaces so the subtitle wraps naturally
+  const heroSubtitle = content.hero_subtitle.replace(
+    /<br\s*\/?>/gi,
+    '<span class="sm:hidden"> </span><br class="max-sm:hidden" />'
+  )
 
   return (<div className={`${containerClasses} h-[calc(50vh)] sm:h-[calc(100vh-96px-36px)]
     bg-[url('/img/hero-bg-500.svg')]
