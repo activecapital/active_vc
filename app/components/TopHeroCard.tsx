@@ -26,7 +26,7 @@ const TopHeroCard = async () => {
     />
 
     <div
-      className="mt-4 text-gray text-[18px] md:text-[24px] leading-[24px] tracking-wide"
+      className="mt-4 text-gray text-[18px] md:text-[24px] leading-[32px] tracking-wide"
       dangerouslySetInnerHTML={{ __html: heroSubtitle }}
     />
   </div>)
