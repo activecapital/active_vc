@@ -1,9 +1,8 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import type { SiteContent, ApproachItem, ContentVersion } from "@/lib/content"
 import { createBrowserSupabase } from "@/lib/supabase-browser"
-import { COUNTRIES, DEFAULT_COUNTRY, type Country } from "../src/countryCodes"
 
 interface Message {
   role: "user" | "assistant" | "system"
@@ -29,36 +28,12 @@ function toEditorHtml(text: string): string {
   return text.replace(/\\n/g, "<br>").replace(/\n/g, "<br>")
 }
 
-type LoginType = "email" | "phone"
-type LoginStep = "input" | "sent" | "code"
-
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   // Login form state
-  const [loginType, setLoginType] = useState<LoginType>("email")
-  const [loginValue, setLoginValue] = useState("")
-  const [loginStep, setLoginStep] = useState<LoginStep>("input")
-  const [otpCode, setOtpCode] = useState("")
   const [loginLoading, setLoginLoading] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
-
-  // Phone country code state
-  const [selectedCountry, setSelectedCountry] = useState<Country>(DEFAULT_COUNTRY)
-  const [phoneDigits, setPhoneDigits] = useState("")
-  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false)
-  const [countrySearch, setCountrySearch] = useState("")
-  const countryDropdownRef = useRef<HTMLDivElement>(null)
-  const fullPhone = selectedCountry.dial + phoneDigits
-  const filteredCountries = useMemo(() => {
-    const q = countrySearch.toLowerCase()
-    if (!q) return COUNTRIES
-    return COUNTRIES.filter(c =>
-      c.name.toLowerCase().includes(q) ||
-      c.dial.includes(q) ||
-      c.code.toLowerCase().includes(q)
-    )
-  }, [countrySearch])
 
   // --- AI Chat state ---
   const [sessions, setSessions] = useState<ChatSession[]>(() => [createSession()])
@@ -115,15 +90,18 @@ export default function AdminPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
+  // Surface auth errors passed back from /auth/callback
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (countryDropdownRef.current && !countryDropdownRef.current.contains(e.target as Node)) {
-        setCountryDropdownOpen(false)
-        setCountrySearch("")
-      }
+    const params = new URLSearchParams(window.location.search)
+    const authError = params.get("error")
+    if (authError) {
+      setLoginError(
+        authError === "not_authorized"
+          ? "This Google account is not authorized for admin access."
+          : "Sign-in failed. Please try again."
+      )
+      window.history.replaceState({}, "", window.location.pathname)
     }
-    document.addEventListener("mousedown", handler)
-    return () => document.removeEventListener("mousedown", handler)
   }, [])
 
   // --- Session helpers ---
@@ -160,62 +138,21 @@ export default function AdminPage() {
   }
 
   // --- Auth ---
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault()
+  // OAuth is initiated from the browser so the PKCE code_verifier is stored in a
+  // cookie; /auth/callback exchanges the code and enforces the admin_users whitelist.
+  const handleGoogleLogin = async () => {
     setLoginError(null)
     setLoginLoading(true)
     try {
-      // Step 1: whitelist check (server-side, service role)
-      const body =
-        loginType === "email"
-          ? { type: "email", email: loginValue }
-          : { type: "phone", phone: fullPhone }
-
-      const res = await fetch("/api/admin/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? "Not authorized")
-
-      // Step 2: send OTP from browser so PKCE code_verifier is stored in cookie
       const supabase = createBrowserSupabase()
-      if (loginType === "email") {
-        const { error } = await supabase.auth.signInWithOtp({
-          email: loginValue,
-          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-        })
-        if (error) throw error
-        setLoginStep("sent")
-      } else {
-        const { error } = await supabase.auth.signInWithOtp({ phone: fullPhone })
-        if (error) throw error
-        setLoginStep("code")
-      }
-    } catch (err: any) {
-      setLoginError(err.message)
-    } finally {
-      setLoginLoading(false)
-    }
-  }
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoginError(null)
-    setLoginLoading(true)
-    try {
-      const res = await fetch("/api/admin/auth/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: fullPhone, token: otpCode }),
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? "Verification failed")
-      // onAuthStateChange will pick up the new session
+      if (error) throw error
+      // Success navigates away to Google; keep the loading state until then
     } catch (err: any) {
       setLoginError(err.message)
-    } finally {
       setLoginLoading(false)
     }
   }
@@ -419,146 +356,29 @@ export default function AdminPage() {
           <h1 className="text-3xl font-bold text-white mb-2 text-center">Admin Access</h1>
           <p className="text-zinc-500 text-sm text-center mb-8">Active VC</p>
 
-          {/* Method toggle */}
-          <div className="flex rounded-lg bg-zinc-900 border border-zinc-800 p-1 mb-6">
-            <button
-              onClick={() => { setLoginType("email"); setLoginStep("input"); setLoginError(null); setLoginValue(""); setPhoneDigits("") }}
-              className={`flex-1 py-2 text-sm rounded-md transition-colors ${loginType === "email" ? "bg-white text-black font-medium" : "text-zinc-400 hover:text-white"}`}
-            >
-              Email Link
-            </button>
-            <button
-              onClick={() => { setLoginType("phone"); setLoginStep("input"); setLoginError(null); setLoginValue(""); setPhoneDigits(""); setCountryDropdownOpen(false); setCountrySearch("") }}
-              className={`flex-1 py-2 text-sm rounded-md transition-colors ${loginType === "phone" ? "bg-white text-black font-medium" : "text-zinc-400 hover:text-white"}`}
-            >
-              Text Code
-            </button>
-          </div>
-
           {loginError && (
             <div className="mb-4 px-4 py-3 bg-red-900/40 border border-red-800 text-red-300 text-sm rounded-lg">
               {loginError}
             </div>
           )}
 
-          {/* Step: enter email or phone */}
-          {loginStep === "input" && (
-            <form onSubmit={handleSendOtp} className="space-y-4">
-              {loginType === "email" ? (
-                <input
-                  type="email"
-                  value={loginValue}
-                  onChange={(e) => setLoginValue(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  autoFocus
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
-                />
-              ) : (
-                <div className="flex gap-2">
-                  <div ref={countryDropdownRef} className="relative shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => { setCountryDropdownOpen(o => !o); setCountrySearch("") }}
-                      className="flex items-center gap-1.5 px-3 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white hover:border-zinc-600 focus:outline-none focus:border-zinc-600 whitespace-nowrap"
-                    >
-                      <img src={`https://flagcdn.com/20x15/${selectedCountry.code.toLowerCase()}.png`} alt={selectedCountry.code} width={20} height={15} className="rounded-sm" />
-                      <span className="text-sm text-zinc-400">{selectedCountry.dial}</span>
-                      <span className="text-zinc-600 text-xs">▼</span>
-                    </button>
-                    {countryDropdownOpen && (
-                      <div className="absolute z-50 top-full left-0 mt-1 w-72 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl overflow-hidden">
-                        <div className="p-2 border-b border-zinc-800">
-                          <input
-                            type="text"
-                            value={countrySearch}
-                            onChange={(e) => setCountrySearch(e.target.value)}
-                            placeholder="Search country…"
-                            autoFocus
-                            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
-                          />
-                        </div>
-                        <div className="max-h-52 overflow-y-auto">
-                          {filteredCountries.map(c => (
-                            <button
-                              key={c.code}
-                              type="button"
-                              onClick={() => { setSelectedCountry(c); setCountryDropdownOpen(false); setCountrySearch("") }}
-                              className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-800 text-left transition-colors ${c.code === selectedCountry.code ? "bg-zinc-800 text-white" : "text-zinc-300"}`}
-                            >
-                              <img src={`https://flagcdn.com/20x15/${c.code.toLowerCase()}.png`} alt={c.code} width={20} height={15} className="rounded-sm shrink-0" />
-                              <span className="flex-1 truncate">{c.name}</span>
-                              <span className="text-zinc-500 shrink-0">{c.dial}</span>
-                            </button>
-                          ))}
-                          {filteredCountries.length === 0 && (
-                            <div className="px-3 py-4 text-zinc-500 text-sm text-center">No countries found</div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <input
-                    type="tel"
-                    value={phoneDigits}
-                    onChange={(e) => setPhoneDigits(e.target.value.replace(/\D/g, ""))}
-                    placeholder="2184602308"
-                    required
-                    autoFocus
-                    className="flex-1 min-w-0 px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
-                  />
-                </div>
-              )}
-              <button
-                type="submit"
-                disabled={loginLoading || (loginType === "phone" ? !phoneDigits.trim() : !loginValue.trim())}
-                className="w-full px-4 py-3 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loginLoading ? "Sending…" : loginType === "email" ? "Send Login Link" : "Send Code"}
-              </button>
-            </form>
-          )}
+          <button
+            onClick={handleGoogleLogin}
+            disabled={loginLoading}
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            {loginLoading ? "Redirecting…" : "Continue with Google"}
+          </button>
 
-          {/* Step: email sent confirmation */}
-          {loginStep === "sent" && (
-            <div className="text-center space-y-4">
-              <div className="text-4xl">📬</div>
-              <p className="text-white font-medium">Check your email</p>
-              <p className="text-zinc-400 text-sm">We sent a login link to <span className="text-white">{loginValue}</span>. Click it to sign in.</p>
-              <button onClick={() => { setLoginStep("input"); setLoginError(null) }} className="text-zinc-500 text-sm hover:text-white transition-colors">
-                Use a different address
-              </button>
-            </div>
-          )}
-
-          {/* Step: enter SMS code */}
-          {loginStep === "code" && (
-            <form onSubmit={handleVerifyOtp} className="space-y-4">
-              <p className="text-zinc-400 text-sm text-center">Enter the code sent to <span className="text-white">{fullPhone}</span></p>
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={6}
-                value={otpCode}
-                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
-                placeholder="000000"
-                required
-                autoFocus
-                className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-center text-xl tracking-[0.5em] placeholder-zinc-700 focus:outline-none focus:border-zinc-600"
-              />
-              <button
-                type="submit"
-                disabled={loginLoading || otpCode.length < 6}
-                className="w-full px-4 py-3 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loginLoading ? "Verifying…" : "Verify Code"}
-              </button>
-              <button type="button" onClick={() => { setLoginStep("input"); setOtpCode(""); setLoginError(null) }} className="w-full text-zinc-500 text-sm hover:text-white transition-colors">
-                Resend code
-              </button>
-            </form>
-          )}
+          <p className="text-zinc-600 text-xs text-center mt-4">
+            Only authorized admin accounts can sign in.
+          </p>
         </div>
       </div>
     )

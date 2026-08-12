@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import Link from "next/link"
 import type { SiteContent, ApproachItem } from "@/lib/content"
+import { createBrowserSupabase } from "@/lib/supabase-browser"
 
 export default function EditorPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState("")
   const [content, setContent] = useState<SiteContent | null>(null)
   const [saving, setSaving] = useState<Record<string, boolean>>({})
   const [saved, setSaved] = useState<Record<string, boolean>>({})
@@ -15,31 +15,29 @@ export default function EditorPage() {
   const contactRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const authStatus = sessionStorage.getItem("admin_authenticated")
-    if (authStatus === "true") {
-      setIsAuthenticated(true)
-      loadContent()
-    } else {
-      setLoading(false)
-    }
-  }, [])
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const response = await fetch("/api/admin/auth", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
+    const supabase = createBrowserSupabase()
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsAuthenticated(true)
+        loadContent()
+      } else {
+        setLoading(false)
+      }
     })
 
-    if (response.ok) {
-      sessionStorage.setItem("admin_authenticated", "true")
-      setIsAuthenticated(true)
-      loadContent()
-    } else {
-      alert("Invalid password")
-    }
-  }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        setIsAuthenticated(true)
+        loadContent()
+      } else if (event === "SIGNED_OUT") {
+        setIsAuthenticated(false)
+        setLoading(false)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const loadContent = async () => {
     setLoading(true)
@@ -131,23 +129,15 @@ export default function EditorPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <h1 className="text-3xl font-bold text-white mb-8 text-center">Admin Access</h1>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
-              className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
-            />
-            <button
-              type="submit"
-              className="w-full px-4 py-3 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition-colors"
-            >
-              Login
-            </button>
-          </form>
+        <div className="w-full max-w-md text-center space-y-4">
+          <h1 className="text-3xl font-bold text-white">Admin Access</h1>
+          <p className="text-zinc-400 text-sm">You need to sign in to use the editor.</p>
+          <Link
+            href="/admin"
+            className="inline-block px-4 py-3 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition-colors"
+          >
+            Sign in with Google
+          </Link>
         </div>
       </div>
     )
@@ -193,10 +183,7 @@ export default function EditorPage() {
               ← AI Chat
             </Link>
             <button
-              onClick={() => {
-                sessionStorage.removeItem("admin_authenticated")
-                setIsAuthenticated(false)
-              }}
+              onClick={() => createBrowserSupabase().auth.signOut()}
               className="text-sm text-zinc-400 hover:text-white transition-colors"
             >
               Logout
