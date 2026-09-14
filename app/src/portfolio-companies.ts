@@ -105,7 +105,7 @@ export const PortfolioCompanies = [
   },
   {
     companyName: 'InsForge',
-    src: '/img/logos/insForge.svg',
+    src: '/img/logos/insforge.svg',
     website: 'https://insForge.dev/',
     width: defaultWidth,
     height: defaultHeight,
