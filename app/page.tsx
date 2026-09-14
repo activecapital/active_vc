@@ -88,10 +88,10 @@ export default function Home() {
   }
 
   const aboutPatText = content?.about_pat ||
-    "Hi, I'm Pat. I'm an entrepreneur turned investor. I've spent my career starting, scaling, and investing in startups. I started Active Capital because I love backing technical founders and helping them reach their potential. I've spent more than 20 years building and investing in software, cloud infrastructure, and AI, and I believe the future is brighter than ever. If you're a founder building an AI-native company, I'd love to hear from you. I welcome warm intros and cold emails."
+    "Hi, I'm Pat. I'm an entrepreneur turned investor. I've spent my career starting, scaling, and investing in enterprise software and cloud infrastructure.  I started Active Capital because I love backing technical founders and helping them reach their potential. If you're rebuilding software and infrastructure for an AI-native world, I'd love to hear from you. I welcome warm intros and cold emails."
 
   const aboutActiveCapitalText = content?.about_active_capital ||
-    "Active Capital is a venture firm focused on pre-seed investing in technical founders building AI-native software, infrastructure, and products that solve real business problems. We love working with founders who stay small and scrappy until they find true product-market fit. We typically invest $100K to $1M, with the ability to invest significantly more as companies grow and our relationship develops. We like to invest early and be a meaningful part of the first capital raised."
+    "Active Capital is a pre-seed venture capital firm. We like to be one of the first investors in a company, typically investing $500K as a first check. We're equally comfortable leading a pre-seed round or investing alongside other great investors. We love working with founders who stay small and scrappy until they find product-market fit, then scale ambitiously from there. As companies grow and our relationships develop, we have the ability to invest significantly more over time."
 
   const contactHtml = content?.contact_html ||
     "<p>If you're a founder building AI-native business software, please email: team@active.vc</p>"
@@ -126,15 +126,15 @@ export default function Home() {
 
       <HowWeInvest items={content?.approach_items} />
 
-      {/* Newsletter */}
-      <h2 className={`${sectionHeadingStyles}`}>Newsletter</h2>
-
-      <Newsletter />
-
       {/* Portfolio */}
       <h2 className={`${sectionHeadingStyles}`}>Portfolio</h2>
 
       <Portfolio />
+
+      {/* Newsletter */}
+      <h2 className={`${sectionHeadingStyles}`}>Newsletter</h2>
+
+      <Newsletter />
 
       {/* Testimonials */}
       <h2 className={`${sectionHeadingStyles}`}>Testimonials</h2>
