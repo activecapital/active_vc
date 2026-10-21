@@ -91,7 +91,7 @@ export default function Home() {
     "Hi, I'm Pat. I'm an entrepreneur turned investor. I've spent my career starting, scaling, and investing in enterprise software and cloud infrastructure.  I started Active Capital because I love backing technical founders and helping them reach their potential. If you're rebuilding software and infrastructure for an AI-native world, I'd love to hear from you. I welcome warm intros and cold emails."
 
   const aboutActiveCapitalText = content?.about_active_capital ||
-    "Active Capital is a pre-seed venture capital firm. We like to be one of the first investors in a company, typically investing $500K as a first check. We're equally comfortable leading a pre-seed round or investing alongside other great investors. We love working with founders who stay small and scrappy until they find product-market fit, then scale ambitiously from there. As companies grow and our relationships develop, we have the ability to invest significantly more over time."
+    "Active Capital is a founder-led, pre-seed venture capital firm. We like to be one of the first investors in a company, typically writing $500K first checks. We’re equally comfortable leading rounds or investing alongside other great investors. Having built and operated technology companies ourselves, we love working with founders who stay lean and scrappy until they find product-market fit, then scale ambitiously from there. As companies grow and relationships develop, we have the ability to invest significantly more over time."
 
   const contactHtml = content?.contact_html ||
     "<p>If you're a founder building AI-native business software, please email: team@active.vc</p>"
