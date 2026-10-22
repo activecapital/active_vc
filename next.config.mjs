@@ -34,28 +34,25 @@ const nextConfig = {
         key: 'Permissions-Policy',
         value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
       },
-      {
-        key: 'Content-Security-Policy',
-        value: [
-          "default-src 'self'",
-          "base-uri 'self'",
-          "form-action 'self'",
-          "frame-ancestors 'none'",
-          "object-src 'none'",
-          "font-src 'self' https: data:",
-          "img-src 'self' data: https://cdn.bunny.net",
-          "style-src 'self' 'unsafe-inline'",
-          "script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://www.gstatic.com https://stats.g.doubleclick.net",
-          "script-src-elem 'self' https://www.googletagmanager.com",
-          "connect-src 'self' https://www.google-analytics.com https://stats.g.doubleclick.net https://analytics.vercel.com https://speed-insights.vercel.com",
-          "frame-src 'self' https://www.googletagmanager.com",
-        ].join('; '),
-      },
     ]
     return [
       {
         source: '/:path*',
         headers: securityHeaders,
+      },
+      {
+        source: '/:path*',
+        // Custom preview domains do not receive Vercel's automatic noindex header.
+        // Keep staging excluded even if it is assigned a production deployment.
+        has: process.env.VERCEL_ENV === 'production'
+          ? [{ type: 'host', value: 'staging\\.active\\.vc' }]
+          : [],
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow',
+          },
+        ],
       },
     ]
   },

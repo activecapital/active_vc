@@ -49,6 +49,7 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const headersList = await headers()
+  const nonce = headersList.get('x-nonce') ?? undefined
   const pathname = headersList.get('x-pathname') || ''
   const isAdminRoute = pathname.startsWith('/admin')
 
@@ -57,7 +58,7 @@ export default async function RootLayout({
       <html lang="en">
         <head>
           <title>Active Capital - Admin</title>
-          <GoogleTagManager gtmId="GTM-WLF2BJCJ" />
+          <GoogleTagManager gtmId="GTM-WLF2BJCJ" nonce={nonce} />
         </head>
         <body className="bg-black">
           {children}
@@ -83,7 +84,7 @@ export default async function RootLayout({
         <meta property="og:image:type" content="image/png" />
         <meta property="og:image:alt" content="Active Capital Logo" />
         <meta property="fb:app_id" content="966242223397117" />
-        <GoogleTagManager gtmId="GTM-WLF2BJCJ" />
+        <GoogleTagManager gtmId="GTM-WLF2BJCJ" nonce={nonce} />
       </head>
       <body className="bg-white ease-in 
         text-[16px] md:text-[18px] overscroll-x-none">

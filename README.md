@@ -21,9 +21,11 @@ Required environment variables are documented in [env.example](./env.example).
 yarn dev     # start the dev server
 yarn lint    # next lint
 yarn build   # next lint & next build
+yarn test:sanitizer # load the server sanitizer and check HTML/XSS handling
+yarn test:csp # check script nonce restrictions and authentication connections
 ```
 
-There is no test suite.
+The sanitizer regression tests use Node's built-in test runner.
 
 ## What's where
 
@@ -52,6 +54,34 @@ breakdown.
 Publishing copies staging content to production, snapshots a semver version, and/or
 merges `staging` → `main` to trigger the production deploy. Details in
 [CLAUDE.md](./CLAUDE.md) and [ARCHITECTURE.md](./ARCHITECTURE.md).
+
+### Staging crawler protection
+
+`app/robots.ts` disallows crawling in non-production environments. In addition,
+`next.config.mjs` sends `X-Robots-Tag: noindex, nofollow` on every preview response,
+including static files, and on `staging.active.vc` even for a production build.
+Production requests to `active.vc` do not receive this header.
+
+These are directives for cooperative crawlers, not access controls. Google must
+fetch a URL to see `noindex`, so the robots.txt block can prevent removal of an
+already indexed URL. If staging appears in search results, temporarily permit
+crawling so Google can read the header, or restrict staging behind authentication.
+
+### Server runtime compatibility
+
+`vercel.json` sets `NODE_OPTIONS=--experimental-require-module` for deployed
+functions. The current `isomorphic-dompurify` dependency uses jsdom, whose CommonJS
+code loads ES modules. Vercel disables that Node capability by default, causing
+homepage requests to fail with `ERR_REQUIRE_ESM` unless it is explicitly enabled.
+Keep this setting when updating the sanitizer; removing sanitization is not a fix.
+
+Reference: [Vercel's Node.js runtime configuration](https://vercel.com/docs/functions/runtimes/node-js/advanced-node-configuration#experimental-nodejs-require-of-es-module).
+
+`proxy.ts` supplies a fresh script nonce and CSP on each request. The request
+headers let Next.js nonce its startup scripts, and the root layout passes the
+same nonce to Google Tag Manager. Cookie refresh responses preserve these headers.
+The selected Supabase origin is allowed for browser authentication. Other security
+headers and staging's indexing restrictions remain in `next.config.mjs`.
 
 ## CHANGELOG
 
