@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { readFileFromGitHub } from "@/lib/github-api"
 import { rateLimit, rateLimitConfigs } from "@/lib/rate-limit"
+import { requireAdmin } from "@/lib/auth"
 
 interface Message {
   role: "user" | "assistant" | "system"
@@ -50,7 +51,10 @@ function parseMarkdownConversation(markdown: string): Message[] {
 }
 
 export async function GET(request: NextRequest) {
-  const rateLimitResult = await rateLimit(request, rateLimitConfigs.chat)
+  const admin = await requireAdmin()
+  if ("response" in admin) return admin.response
+
+  const rateLimitResult = await rateLimit(request, rateLimitConfigs.chat, "conversation")
 
   if (!rateLimitResult.success) {
     return NextResponse.json(

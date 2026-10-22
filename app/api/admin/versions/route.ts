@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getContentVersions, revertToVersion } from "@/lib/content"
 import { rateLimit, rateLimitConfigs } from "@/lib/rate-limit"
+import { requireAdmin } from "@/lib/auth"
 
 export async function GET(request: NextRequest) {
-  const rateLimitResult = await rateLimit(request, rateLimitConfigs.fileEdit)
+  const admin = await requireAdmin()
+  if ("response" in admin) return admin.response
+
+  const rateLimitResult = await rateLimit(request, rateLimitConfigs.fileEdit, "versions")
   if (!rateLimitResult.success) {
     return NextResponse.json({ error: "Rate limit exceeded." }, { status: 429 })
   }
@@ -18,7 +22,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const rateLimitResult = await rateLimit(request, rateLimitConfigs.publish)
+  const admin = await requireAdmin()
+  if ("response" in admin) return admin.response
+
+  const rateLimitResult = await rateLimit(request, rateLimitConfigs.publish, "versions-publish")
   if (!rateLimitResult.success) {
     return NextResponse.json({ error: "Rate limit exceeded." }, { status: 429 })
   }

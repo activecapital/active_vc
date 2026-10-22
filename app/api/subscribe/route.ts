@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { rateLimit } from '@/lib/rate-limit'
 
 interface SubscribeRequestBody {
   email: string
@@ -19,6 +20,13 @@ interface SubscribeResponseData {
  * @returns A NextResponse object with the subscription status.
  */
 export async function POST(req: NextRequest) {
+  const rateLimitResult = await rateLimit(req, { maxRequests: 10, windowMs: 60 * 1000 }, 'subscribe')
+  if (!rateLimitResult.success) {
+    return NextResponse.json(
+      { success: false, message: 'Too many requests. Please slow down.' },
+      { status: 429 }
+    )
+  }
 
   const { email, firstName } = (await req.json()) as SubscribeRequestBody
 

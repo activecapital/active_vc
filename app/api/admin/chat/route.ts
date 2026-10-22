@@ -9,6 +9,7 @@ import {
 } from "@/lib/github-api"
 import { getAllContent, updateContent, updateMultipleContent } from "@/lib/content"
 import type { SiteContent } from "@/lib/content"
+import { requireAdmin } from "@/lib/auth"
 
 interface Message {
   role: "user" | "assistant" | "system"
@@ -64,7 +65,10 @@ async function appendToConversation(message: Message) {
 export const maxDuration = 60
 
 export async function POST(request: NextRequest) {
-  const rateLimitResult = await rateLimit(request, rateLimitConfigs.chat)
+  const admin = await requireAdmin()
+  if ("response" in admin) return admin.response
+
+  const rateLimitResult = await rateLimit(request, rateLimitConfigs.chat, "chat")
 
   if (!rateLimitResult.success) {
     return NextResponse.json(

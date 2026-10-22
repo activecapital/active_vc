@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from "next/server"
 import { mergeBranches } from "@/lib/github-api"
 import { rateLimit, rateLimitConfigs } from "@/lib/rate-limit"
 import { publishStagingToProduction, saveContentVersion } from "@/lib/content"
+import { requireAdmin } from "@/lib/auth"
 
 export async function POST(request: NextRequest) {
-  const rateLimitResult = await rateLimit(request, rateLimitConfigs.publish)
+  const admin = await requireAdmin()
+  if ("response" in admin) return admin.response
+
+  const rateLimitResult = await rateLimit(request, rateLimitConfigs.publish, "publish")
 
   if (!rateLimitResult.success) {
     return NextResponse.json(

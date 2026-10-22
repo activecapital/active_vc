@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAllContent, updateContent, updateMultipleContent, SiteContent } from "@/lib/content"
 import { rateLimit, rateLimitConfigs } from "@/lib/rate-limit"
+import { requireAdmin } from "@/lib/auth"
 
 export async function GET(request: NextRequest) {
-  const rateLimitResult = await rateLimit(request, rateLimitConfigs.fileEdit)
+  const admin = await requireAdmin()
+  if ("response" in admin) return admin.response
+
+  const rateLimitResult = await rateLimit(request, rateLimitConfigs.fileEdit, "content")
 
   if (!rateLimitResult.success) {
     return NextResponse.json(
@@ -25,7 +29,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const rateLimitResult = await rateLimit(request, rateLimitConfigs.fileEdit)
+  const admin = await requireAdmin()
+  if ("response" in admin) return admin.response
+
+  const rateLimitResult = await rateLimit(request, rateLimitConfigs.fileEdit, "content")
 
   if (!rateLimitResult.success) {
     return NextResponse.json(

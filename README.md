@@ -1,26 +1,59 @@
-# Active Capital Website
+# Active Capital
+
+The Active Capital website: a Next.js marketing site with a built-in admin CMS that
+can edit its own content (and its own source) via an AI chat assistant.
+
+> Full details — layout/page setup, what's stored in the database vs. the code, and
+> how the admin panel works — live in **[ARCHITECTURE.md](./ARCHITECTURE.md)**.
 
 ## Getting Started
 
-First, install dependencies
 ```bash
-
 yarn install
-``` 
-
-### To run the development server:
-
-```bash
-
-yarn dev
+yarn dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Required environment variables are documented in [env.example](./env.example).
 
-### CHANGELOG
+## Commands
 
-* Feb 21, 2025
+```bash
+yarn dev     # start the dev server
+yarn lint    # next lint
+yarn build   # next lint & next build
+```
 
-Added Chris Saum back to Team
-Updated Website text
-Updated contact email to team@active.vc
+There is no test suite.
+
+## What's where
+
+- **`app/layout.tsx`** — root layout; renders admin chrome vs. public chrome based
+  on the request path.
+- **`app/page.tsx`** — homepage; fetches DB content from `/api/content` and
+  composes the page from components in `app/components/`.
+- **`app/components/`** — presentational section components (Portfolio, Team,
+  Testimonials, HowWeInvest, etc.).
+- **`app/src/`** — static data (portfolio companies, testimonials, characteristics).
+- **`app/admin/`** — the admin CMS: visual editor + AI chat + version history.
+- **`app/api/`** — API routes (public content, subscribe, and the admin actions).
+- **`lib/`** — Supabase clients, content access, GitHub API, rate limiting.
+- **`middleware.ts`** — Next middleware: session refresh + 1-hour max session age on `/admin`, plus the `x-pathname` header. Server-side admin auth is enforced per-route by `lib/auth.ts` (`requireAdmin`), not by the middleware.
+
+Content is split in two: editable marketing copy lives in the Supabase
+`site_content` table (updated live, no deploy), while everything structural is
+committed to the code and ships on deploy. See the architecture doc for the full
+breakdown.
+
+## Branch / environment model
+
+- `staging` branch → staging.active.vc → staging Supabase
+- `main` branch → production → production Supabase
+
+Publishing copies staging content to production, snapshots a semver version, and/or
+merges `staging` → `main` to trigger the production deploy. Details in
+[CLAUDE.md](./CLAUDE.md) and [ARCHITECTURE.md](./ARCHITECTURE.md).
+
+## CHANGELOG
+
+* Feb 21, 2025 — Added Chris Saum back to Team; updated website text; contact email
+  changed to team@active.vc

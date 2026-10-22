@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { readFileFromGitHub, writeFileToGitHub, ensureBranchExists } from "@/lib/github-api"
 import { rateLimit, rateLimitConfigs } from "@/lib/rate-limit"
+import { requireAdmin } from "@/lib/auth"
 
 export async function POST(request: NextRequest) {
-  const rateLimitResult = await rateLimit(request, rateLimitConfigs.fileEdit)
+  const admin = await requireAdmin()
+  if ("response" in admin) return admin.response
+
+  const rateLimitResult = await rateLimit(request, rateLimitConfigs.fileEdit, "file-edit")
 
   if (!rateLimitResult.success) {
     return NextResponse.json(

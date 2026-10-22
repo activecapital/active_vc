@@ -42,9 +42,11 @@ Everything else on the page — portfolio companies, testimonials, logos, charac
 
 ## Auth and middleware
 
-- `proxy.ts` (Next 16's middleware, matches all paths) refreshes the Supabase session on every request and enforces a 1-hour max session age on `/admin` routes. Its comment about keeping `getUser()` immediately after client creation is load-bearing.
-- Admin login is Supabase OTP (email or phone) restricted to the `admin_users` table; server routes use `lib/supabase-server.ts` (cookie-based SSR client).
-- All admin API routes go through `lib/rate-limit.ts` (in-memory per-route configs; Upstash Redis optional in production).
+- `middleware.ts` (Next middleware, matches dynamic paths) refreshes the Supabase session on every request and enforces a 1-hour max session age on `/admin` routes. Its comment about keeping `getUser()` immediately after client creation is load-bearing. It attaches the `x-pathname` header the root layout uses to switch admin vs. public chrome.
+- Admin login is **Google OAuth** initiated in the browser (`app/admin/page.tsx`), exchanged in `app/auth/callback/route.ts`, which enforces the `admin_users` whitelist (primary or secondary email) via `lib/auth.ts`'s `isWhitelisted`. Anyone not whitelisted is signed out and sent back with `?error=not_authorized`.
+- **Every `/api/admin/*` route is gated by `lib/auth.ts`'s `requireAdmin()`** (verifies a whitelisted session server-side, returns 401 otherwise). Client-side gating in the admin page is not a security control — the server guard is.
+- All admin API routes also go through `lib/rate-limit.ts` (per-route keys; Upstash Redis when `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` are set, in-memory fallback).
+- Server routes use `lib/supabase-server.ts` (cookie-based SSR client) for the caller's session and `lib/supabase.ts` service-role clients for whitelist/DB writes.
 
 ## Conventions
 

@@ -5,6 +5,7 @@ import { track } from '@vercel/analytics'
 import Image from "next/image"
 import Link from "next/link"
 
+import DOMPurify from "isomorphic-dompurify"
 import { faintBorder, hoverDimmed } from "./src/cssClasses"
 import { Lexend_Deca } from 'next/font/google'
 import Portfolio from "./components/Portfolio"
@@ -87,14 +88,18 @@ export default function Home() {
     track('Pat Avatar clicked')
   }
 
-  const aboutPatText = content?.about_pat ||
-    "Hi, I'm Pat. I'm an entrepreneur turned investor. I've spent my career starting, scaling, and investing in enterprise software and cloud infrastructure.  I started Active Capital because I love backing technical founders and helping them reach their potential. If you're rebuilding software and infrastructure for an AI-native world, I'd love to hear from you. I welcome warm intros and cold emails."
+  // DB-driven HTML is rendered via dangerouslySetInnerHTML, so sanitize it to
+  // strip scripts, event handlers, and unsafe URLs before it reaches the DOM.
+  const sanitize = (html: string) => DOMPurify.sanitize(html)
 
-  const aboutActiveCapitalText = content?.about_active_capital ||
-    "Active Capital is a founder-led, pre-seed venture capital firm. We like to be one of the first investors in a company, typically writing $500K first checks. We’re equally comfortable leading rounds or investing alongside other great investors. Having built and operated technology companies ourselves, we love working with founders who stay lean and scrappy until they find product-market fit, then scale ambitiously from there. As companies grow and relationships develop, we have the ability to invest significantly more over time."
+  const aboutPatText = sanitize(content?.about_pat ||
+    "Hi, I'm Pat. I'm an entrepreneur turned investor. I've spent my career starting, scaling, and investing in enterprise software and cloud infrastructure.  I started Active Capital because I love backing technical founders and helping them reach their potential. If you're rebuilding software and infrastructure for an AI-native world, I'd love to hear from you. I welcome warm intros and cold emails.")
 
-  const contactHtml = content?.contact_html ||
-    "<p>If you're a founder building AI-native business software, please email: team@active.vc</p>"
+  const aboutActiveCapitalText = sanitize(content?.about_active_capital ||
+    "Active Capital is a founder-led, pre-seed venture capital firm. We like to be one of the first investors in a company, typically writing $500K first checks. We’re equally comfortable leading rounds or investing alongside other great investors. Having built and operated technology companies ourselves, we love working with founders who stay lean and scrappy until they find product-market fit, then scale ambitiously from there. As companies grow and relationships develop, we have the ability to invest significantly more over time.")
+
+  const contactHtml = sanitize(content?.contact_html ||
+    "<p>If you're a founder building AI-native business software, please email: team@active.vc</p>")
 
   return (
     <main className="flex flex-col items-center justify-between pb-12
