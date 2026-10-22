@@ -10,7 +10,8 @@
     "dev": "next dev",
     "build": "next lint & next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:sanitizer": "node --experimental-require-module --test tests/sanitizer.test.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
