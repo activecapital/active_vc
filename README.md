@@ -21,9 +21,10 @@ Required environment variables are documented in [env.example](./env.example).
 yarn dev     # start the dev server
 yarn lint    # next lint
 yarn build   # next lint & next build
+yarn test:sanitizer # load the server sanitizer and check HTML/XSS handling
 ```
 
-There is no test suite.
+The sanitizer regression tests use Node's built-in test runner.
 
 ## What's where
 
@@ -64,6 +65,16 @@ These are directives for cooperative crawlers, not access controls. Google must
 fetch a URL to see `noindex`, so the robots.txt block can prevent removal of an
 already indexed URL. If staging appears in search results, temporarily permit
 crawling so Google can read the header, or restrict staging behind authentication.
+
+### Server runtime compatibility
+
+`vercel.json` sets `NODE_OPTIONS=--experimental-require-module` for deployed
+functions. The current `isomorphic-dompurify` dependency uses jsdom, whose CommonJS
+code loads ES modules. Vercel disables that Node capability by default, causing
+homepage requests to fail with `ERR_REQUIRE_ESM` unless it is explicitly enabled.
+Keep this setting when updating the sanitizer; removing sanitization is not a fix.
+
+Reference: [Vercel's Node.js runtime configuration](https://vercel.com/docs/functions/runtimes/node-js/advanced-node-configuration#experimental-nodejs-require-of-es-module).
 
 ## CHANGELOG
 
