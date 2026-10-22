@@ -73,6 +73,7 @@ export default async function RootLayout({
     <html lang="en">
       <head>
         <title>Active Capital</title>
+        {pathname === '/' && <link rel="canonical" href="https://active.vc/" />}
         <meta property="og:url" content="https://active.vc" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Active Capital" />
