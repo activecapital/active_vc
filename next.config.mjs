@@ -57,6 +57,20 @@ const nextConfig = {
         source: '/:path*',
         headers: securityHeaders,
       },
+      {
+        source: '/:path*',
+        // Custom preview domains do not receive Vercel's automatic noindex header.
+        // Keep staging excluded even if it is assigned a production deployment.
+        has: process.env.VERCEL_ENV === 'production'
+          ? [{ type: 'host', value: 'staging\\.active\\.vc' }]
+          : [],
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow',
+          },
+        ],
+      },
     ]
   },
 };
