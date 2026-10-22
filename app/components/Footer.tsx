@@ -24,7 +24,7 @@ const Footer = () => {
       ${scrollFadeInStyles}
       `}>
       <div className="lg:ml-16">&copy; {new Date().getFullYear()} ACTIVE VENTURE PARTNERS, LLC.</div>
-      <div className="lg:mr-16">BUILDING IN TEXAS. INVESTING ALL OVER.</div>
+      <div className="lg:mr-16">SAN ANTONIO | SAN FRANCISCO</div>
     </div>
   </div>)
 }
