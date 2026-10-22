@@ -49,6 +49,18 @@ breakdown.
 - `staging` branch → staging.active.vc → staging Supabase
 - `main` branch → production → production Supabase
 
+### Staging crawler protection
+
+`app/robots.ts` disallows crawling in non-production environments. In addition,
+`next.config.mjs` sends `X-Robots-Tag: noindex, nofollow` on every preview response,
+including static files, and on `staging.active.vc` even for a production build.
+Production requests to `active.vc` do not receive this header.
+
+These are directives for cooperative crawlers, not access controls. Google must
+fetch a URL to see `noindex`, so the robots.txt block can prevent removal of an
+already indexed URL. If staging appears in search results, temporarily permit
+crawling so Google can read the header, or restrict staging behind authentication.
+
 Publishing copies staging content to production, snapshots a semver version, and/or
 merges `staging` → `main` to trigger the production deploy. Details in
 [CLAUDE.md](./CLAUDE.md) and [ARCHITECTURE.md](./ARCHITECTURE.md).
