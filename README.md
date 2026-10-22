@@ -22,6 +22,7 @@ yarn dev     # start the dev server
 yarn lint    # next lint
 yarn build   # next lint & next build
 yarn test:sanitizer # load the server sanitizer and check HTML/XSS handling
+yarn test:csp # check script nonce restrictions and authentication connections
 ```
 
 The sanitizer regression tests use Node's built-in test runner.
@@ -75,6 +76,12 @@ homepage requests to fail with `ERR_REQUIRE_ESM` unless it is explicitly enabled
 Keep this setting when updating the sanitizer; removing sanitization is not a fix.
 
 Reference: [Vercel's Node.js runtime configuration](https://vercel.com/docs/functions/runtimes/node-js/advanced-node-configuration#experimental-nodejs-require-of-es-module).
+
+`proxy.ts` supplies a fresh script nonce and CSP on each request. The request
+headers let Next.js nonce its startup scripts, and the root layout passes the
+same nonce to Google Tag Manager. Cookie refresh responses preserve these headers.
+The selected Supabase origin is allowed for browser authentication. Other security
+headers and staging's indexing restrictions remain in `next.config.mjs`.
 
 ## CHANGELOG
 

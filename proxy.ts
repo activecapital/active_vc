@@ -1,12 +1,11 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { buildContentSecurityPolicy } from "./lib/csp"
 
 const SESSION_MAX_AGE_HOURS = 1
 
 export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request })
-
   const isProd = process.env.VERCEL_ENV === "production"
   const supabaseUrl = isProd
     ? process.env.NEXT_PUBLIC_PRODUCTION_SUPABASE_URL!
@@ -14,6 +13,18 @@ export async function proxy(request: NextRequest) {
   const supabaseAnonKey = isProd
     ? process.env.NEXT_PUBLIC_PRODUCTION_SUPABASE_ANON_KEY!
     : process.env.NEXT_PUBLIC_STAGING_SUPABASE_ANON_KEY!
+
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
+  const contentSecurityPolicy = buildContentSecurityPolicy(nonce, supabaseUrl)
+  const createResponse = () => {
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-nonce', nonce)
+    requestHeaders.set('x-pathname', request.nextUrl.pathname)
+    // Next.js reads the request CSP to nonce its generated startup scripts.
+    requestHeaders.set('Content-Security-Policy', contentSecurityPolicy)
+    return NextResponse.next({ request: { headers: requestHeaders } })
+  }
+  let supabaseResponse = createResponse()
 
   if (supabaseAnonKey) {
     const supabase = createServerClient(
@@ -28,7 +39,7 @@ export async function proxy(request: NextRequest) {
             cookiesToSet.forEach(({ name, value }) =>
               request.cookies.set(name, value)
             )
-            supabaseResponse = NextResponse.next({ request })
+            supabaseResponse = createResponse()
             cookiesToSet.forEach(({ name, value, options }) =>
               supabaseResponse.cookies.set(name, value, options)
             )
@@ -51,6 +62,7 @@ export async function proxy(request: NextRequest) {
         const url = request.nextUrl.clone()
         url.pathname = "/admin"
         const redirectResponse = NextResponse.redirect(url)
+        redirectResponse.headers.set('Content-Security-Policy', contentSecurityPolicy)
         // Transfer the sign-out Set-Cookie headers so session cookies are deleted
         const signOutCookies =
           (supabaseResponse.headers as any).getSetCookie?.() ?? []
@@ -63,6 +75,7 @@ export async function proxy(request: NextRequest) {
   }
 
   supabaseResponse.headers.set("x-pathname", request.nextUrl.pathname)
+  supabaseResponse.headers.set('Content-Security-Policy', contentSecurityPolicy)
   return supabaseResponse
 }
 
