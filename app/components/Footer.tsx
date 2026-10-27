@@ -17,14 +17,14 @@ const Footer = () => {
   `
 
   return (<div className={`${footerStyles}`}>
-    <div className={`flex flex-col lg:flex-row items-center justify-between 
-      w-full 
+    <div className={`flex flex-col items-center justify-center
+      w-full text-center
       text-[10px] text-white opacity-40
       ${fontLexend.className} leading-relaxed
       ${scrollFadeInStyles}
       `}>
-      <div className="lg:ml-16">&copy; {new Date().getFullYear()} ACTIVE VENTURE PARTNERS, LLC.</div>
-      <div className="lg:mr-16">SAN ANTONIO | SAN FRANCISCO</div>
+      <div>&copy; {new Date().getFullYear()} ACTIVE VENTURE PARTNERS, LLC.</div>
+      <div>SAN ANTONIO | SAN FRANCISCO</div>
     </div>
   </div>)
 }
