@@ -1,19 +1,19 @@
 # Repository guidance
 
-This is the Active Capital marketing site, built with Next.js 16 App Router,
+This is a one-page Active Capital marketing site using Next.js 16 App Router,
 React 19, Tailwind CSS 4, TypeScript, and Yarn. Use Node.js 24.
 
 Commands: `yarn dev`, `yarn test`, `yarn build`, and `yarn start`.
 
-All public copy is checked in. `lib/content.ts` is the single source for the six
-marketing content fields; `app/src/` holds portfolio and testimonial data;
-`app/components/` contains the presentation and team/advisor details.
+Write marketing copy directly as JSX in `app/page.tsx` and the relevant component.
+The hero is in `TopHeroCard.tsx`; approach items are in `HowWeInvest.tsx`.
+Portfolio and testimonial arrays live in `app/src/`. Keep the site simple:
+do not introduce a CMS, content abstraction, or database layer.
 
-Preserve production copy and layout unless a change is requested. The original
-production export is in `content/production-snapshot.json`. Content changes deploy
-through Git: staging to staging.active.vc, main to active.vc. There is no CMS or
-persistence layer. Only the Beehiiv newsletter endpoint requires secrets.
+Preserve production copy and layout unless a change is requested. Deploy through
+Git: staging to staging.active.vc, main to active.vc. Only the Beehiiv newsletter
+endpoint needs credentials.
 
 `proxy.ts` preserves CSP nonces and pathname forwarding for the canonical tag.
-Do not remove nonce propagation: Next.js framework startup scripts depend on it.
-Use the `@/*` alias for imports relative to the repository root.
+Next.js startup scripts depend on nonce propagation. The `@/*` import alias maps
+to the repository root.

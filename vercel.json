@@ -1,7 +1,4 @@
 {
-  "env": {
-    "NODE_OPTIONS": "--experimental-require-module"
-  },
   "git": {
     "deploymentEnabled": {
       "main": true,

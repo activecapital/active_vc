@@ -4,7 +4,6 @@ import { track } from '@vercel/analytics'
 import Image from "next/image"
 import Link from "next/link"
 
-import DOMPurify from "isomorphic-dompurify"
 import { faintBorder } from "./src/cssClasses"
 import { Lexend_Deca } from 'next/font/google'
 import Portfolio from "./components/Portfolio"
@@ -13,7 +12,6 @@ import Team from "./components/Team"
 import Advisors from "./components/Advisors"
 import Newsletter from "./components/Newsletter"
 import HowWeInvest from "./components/HowWeInvest"
-import { SITE_CONTENT as content } from "@/lib/content"
 
 
 const fontLexendDeca = Lexend_Deca({
@@ -59,11 +57,6 @@ export default function Home() {
     track('Pat Avatar clicked')
   }
 
-  // Preserve authored markup while keeping the existing HTML sanitization.
-  const aboutPatText = DOMPurify.sanitize(content.about_pat)
-  const aboutActiveCapitalText = DOMPurify.sanitize(content.about_active_capital)
-  const contactHtml = DOMPurify.sanitize(content.contact_html)
-
   return (
     <main className="flex flex-col items-center justify-between pb-12
       px-4 py-4 md:px-12 lg:px-24 max-w-[1216px] mx-auto">
@@ -76,7 +69,9 @@ export default function Home() {
             <Image src="/img/photos/pat-matthews_2026.png" width={800} height={800} alt="Pat Matthews" className={`${aboutImgStyles}`} />
           </Link>
         </div>
-        <div className={`${aboutMsgTextContainer}`} dangerouslySetInnerHTML={{ __html: aboutPatText }} />
+        <div className={aboutMsgTextContainer}>
+          Hi, I’m Pat. I’m an entrepreneur turned investor. I’ve spent my career building, scaling, and investing in enterprise software and cloud infrastructure.&nbsp; I started Active Capital because I love working with technical founders and helping them reach their potential. Today, I’m backing founders rebuilding software and infrastructure for an AI-native world.&nbsp; If that’s you, I’d love to hear from you. Warm intros and cold emails are always welcome.
+        </div>
       </div>
 
       <h2 className={`${sectionHeadingStyles}`}>About</h2>
@@ -87,12 +82,14 @@ export default function Home() {
         <div className={`${aboutMsgImgContainer}`}>
           <Image src="/img/active-capital-icon.svg" width={180} height={180} alt="Active Capital Icon" className={`${aboutImgStyles}`} />
         </div>
-        <div className={aboutMsgTextContainer} dangerouslySetInnerHTML={{ __html: aboutActiveCapitalText }} />
+        <div className={aboutMsgTextContainer}>
+          Active Capital is a founder-led, pre-seed venture capital firm. We like to be one of the first investors in a company, typically writing $500K first checks. We’re equally comfortable leading rounds or investing alongside other great investors. Having built and operated technology companies ourselves, we love working with founders who stay lean and scrappy until they find product-market fit, then scale ambitiously from there. As companies grow and relationships develop, we have the ability to invest significantly more over time.
+        </div>
       </div>
 
       <h2 className={`${sectionHeadingStyles}`}>Approach</h2>
 
-      <HowWeInvest items={content.approach_items} />
+      <HowWeInvest />
 
       {/* Portfolio */}
       <h2 className={`${sectionHeadingStyles}`}>Portfolio</h2>
@@ -122,9 +119,9 @@ export default function Home() {
       {/* Contact */}
       <h2 className={`${sectionHeadingStyles}`}>Contact Us</h2>
 
-      <div className={`${subHeadingStyles} mt-6`}
-        dangerouslySetInnerHTML={{ __html: contactHtml }}
-      />
+      <div className={`${subHeadingStyles} mt-6`}>
+        <p>If you’re raising a pre-seed round we’d love to learn more. Email is best: team@active.vc</p>
+      </div>
     </main >
   )
 }
