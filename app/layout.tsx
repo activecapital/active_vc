@@ -51,24 +51,6 @@ export default async function RootLayout({
   const headersList = await headers()
   const nonce = headersList.get('x-nonce') ?? undefined
   const pathname = headersList.get('x-pathname') || ''
-  const isAdminRoute = pathname.startsWith('/admin')
-
-  if (isAdminRoute) {
-    return (
-      <html lang="en">
-        <head>
-          <title>Active Capital - Admin</title>
-          <GoogleTagManager gtmId="GTM-WLF2BJCJ" nonce={nonce} />
-        </head>
-        <body className="bg-black">
-          {children}
-          <SpeedInsights />
-          <Analytics />
-        </body>
-      </html>
-    )
-  }
-
   return (
     <html lang="en">
       <head>

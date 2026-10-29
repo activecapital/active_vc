@@ -8,7 +8,7 @@ const directives = (policy) => new Map(policy.split('; ').map((value) => {
 }))
 
 test('both script directives allow only the supplied nonce for inline scripts', () => {
-  const policy = directives(buildContentSecurityPolicy('request-one', undefined, false))
+  const policy = directives(buildContentSecurityPolicy('request-one', false))
   for (const name of ['script-src', 'script-src-elem']) {
     assert.ok(policy.get(name).includes("'nonce-request-one'"))
     assert.ok(!policy.get(name).includes("'unsafe-inline'"))
@@ -22,13 +22,7 @@ test('both script directives allow only the supplied nonce for inline scripts', 
   assert.deepEqual(policy.get('frame-ancestors'), ["'none'"])
 })
 
-test('browser authentication can connect to the configured Supabase origin', () => {
-  const policy = directives(buildContentSecurityPolicy('test', 'https://staging-project.supabase.co/auth/v1', false))
-  assert.ok(policy.get('connect-src').includes('https://staging-project.supabase.co'))
-  assert.ok(!policy.get('connect-src').includes('*'))
-})
-
 test('eval is available only for local development', () => {
-  const policy = directives(buildContentSecurityPolicy('test', undefined, true))
+  const policy = directives(buildContentSecurityPolicy('test', true))
   assert.ok(policy.get('script-src').includes("'unsafe-eval'"))
 })

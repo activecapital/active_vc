@@ -1,5 +1,5 @@
 import { Lexend_Deca } from 'next/font/google'
-import { getPublicContent } from '@/lib/content'
+import { SITE_CONTENT as content } from '@/lib/content'
 
 const fontLexendDeca = Lexend_Deca({
   weight: ['600', '700'],
@@ -8,8 +8,7 @@ const fontLexendDeca = Lexend_Deca({
 
 const containerClasses = `p-4 md:p-8 text-center flex flex-col items-center justify-center`
 
-const TopHeroCard = async () => {
-  const content = await getPublicContent()
+const TopHeroCard = () => {
   const heroTitle = content.hero_title
   // On xs screens, swap authored <br/> tags for spaces so the subtitle wraps naturally
   const heroSubtitle = content.hero_subtitle.replace(

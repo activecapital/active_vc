@@ -1,21 +1,19 @@
 'use client'
-import { useState, useEffect } from 'react'
 import { track } from '@vercel/analytics'
 
 import Image from "next/image"
 import Link from "next/link"
 
 import DOMPurify from "isomorphic-dompurify"
-import { faintBorder, hoverDimmed } from "./src/cssClasses"
+import { faintBorder } from "./src/cssClasses"
 import { Lexend_Deca } from 'next/font/google'
 import Portfolio from "./components/Portfolio"
 import Testimonials from "./components/Testimonials"
 import Team from "./components/Team"
 import Advisors from "./components/Advisors"
-import Contact from "./components/Contact"
 import Newsletter from "./components/Newsletter"
 import HowWeInvest from "./components/HowWeInvest"
-import type { SiteContent } from "@/lib/content"
+import { SITE_CONTENT as content } from "@/lib/content"
 
 
 const fontLexendDeca = Lexend_Deca({
@@ -24,15 +22,6 @@ const fontLexendDeca = Lexend_Deca({
 })
 
 export default function Home() {
-  const [content, setContent] = useState<SiteContent | null>(null)
-
-  useEffect(() => {
-    fetch('/api/content')
-      .then(res => res.json())
-      .then(data => setContent(data))
-      .catch(err => console.error('Failed to load content:', err))
-  }, [])
-
   const sectionHeadingStyles = `w-full
     text-center
     text-3xl
@@ -66,40 +55,14 @@ export default function Home() {
     text-justify
     `
     
-  const teamContactEmail = process.env.NEXT_PUBLIC_TEAM_CONTACT_EMAIL || ""
-
-  const handleContactEmailClicked = (e: React.MouseEvent<HTMLElement>) => {
-    e.preventDefault()
-
-    track('Cold Emails Link clicked', { email: teamContactEmail })
-
-    navigator.clipboard.writeText(teamContactEmail)
-      .then(() => {
-        // Optional: Display a message or perform an action after copying
-        alert(`Email ${teamContactEmail} copied to clipboard.`);
-      })
-      .catch((err) => {
-        // Handle any errors
-        console.error('Error copying email to clipboard:', err);
-      });
-  }
-
   const patAvatarClicked = (e: React.MouseEvent<HTMLElement>) => {
     track('Pat Avatar clicked')
   }
 
-  // DB-driven HTML is rendered via dangerouslySetInnerHTML, so sanitize it to
-  // strip scripts, event handlers, and unsafe URLs before it reaches the DOM.
-  const sanitize = (html: string) => DOMPurify.sanitize(html)
-
-  const aboutPatText = sanitize(content?.about_pat ||
-    "Hi, I'm Pat. I'm an entrepreneur turned investor. I've spent my career starting, scaling, and investing in enterprise software and cloud infrastructure.  I started Active Capital because I love backing technical founders and helping them reach their potential. If you're rebuilding software and infrastructure for an AI-native world, I'd love to hear from you. I welcome warm intros and cold emails.")
-
-  const aboutActiveCapitalText = sanitize(content?.about_active_capital ||
-    "Active Capital is a founder-led, pre-seed venture capital firm. We like to be one of the first investors in a company, typically writing $500K first checks. We’re equally comfortable leading rounds or investing alongside other great investors. Having built and operated technology companies ourselves, we love working with founders who stay lean and scrappy until they find product-market fit, then scale ambitiously from there. As companies grow and relationships develop, we have the ability to invest significantly more over time.")
-
-  const contactHtml = sanitize(content?.contact_html ||
-    "<p>If you're a founder building AI-native business software, please email: team@active.vc</p>")
+  // Preserve authored markup while keeping the existing HTML sanitization.
+  const aboutPatText = DOMPurify.sanitize(content.about_pat)
+  const aboutActiveCapitalText = DOMPurify.sanitize(content.about_active_capital)
+  const contactHtml = DOMPurify.sanitize(content.contact_html)
 
   return (
     <main className="flex flex-col items-center justify-between pb-12
@@ -129,7 +92,7 @@ export default function Home() {
 
       <h2 className={`${sectionHeadingStyles}`}>Approach</h2>
 
-      <HowWeInvest items={content?.approach_items} />
+      <HowWeInvest items={content.approach_items} />
 
       {/* Portfolio */}
       <h2 className={`${sectionHeadingStyles}`}>Portfolio</h2>
