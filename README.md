@@ -1,89 +1,44 @@
 # Active Capital
 
-The Active Capital website: a Next.js marketing site with a built-in admin CMS that
-can edit its own content (and its own source) via an AI chat assistant.
+A one-page Next.js 16 website using React 19, TypeScript, and Tailwind CSS 4.
+All copy is hardcoded in the page and components.
 
-> Full details — layout/page setup, what's stored in the database vs. the code, and
-> how the admin panel works — live in **[ARCHITECTURE.md](./ARCHITECTURE.md)**.
+## Development
 
-## Getting Started
-
-```bash
-yarn install
-yarn dev        # http://localhost:3000
-```
-
-Required environment variables are documented in [env.example](./env.example).
-
-## Commands
+Use Node.js 24 and Yarn:
 
 ```bash
-yarn dev     # start the dev server
-yarn lint    # next lint
-yarn build   # next lint & next build
-yarn test:sanitizer # load the server sanitizer and check HTML/XSS handling
-yarn test:csp # check script nonce restrictions and authentication connections
+yarn install --frozen-lockfile
+yarn dev       # http://localhost:3000
+yarn test      # CSP regression checks
+yarn build     # production build and TypeScript validation
+yarn start     # serve the production build
 ```
 
-The sanitizer regression tests use Node's built-in test runner.
+No environment variables are needed to render the page. Newsletter subscriptions
+use the Beehiiv credentials in [env.example](./env.example).
 
-## What's where
+## Editing the site
 
-- **`app/layout.tsx`** — root layout; renders admin chrome vs. public chrome based
-  on the request path.
-- **`app/page.tsx`** — homepage; fetches DB content from `/api/content` and
-  composes the page from components in `app/components/`.
-- **`app/components/`** — presentational section components (Portfolio, Team,
-  Testimonials, HowWeInvest, etc.).
-- **`app/src/`** — static data (portfolio companies, testimonials, characteristics).
-- **`app/admin/`** — the admin CMS: visual editor + AI chat + version history.
-- **`app/api/`** — API routes (public content, subscribe, and the admin actions).
-- **`lib/`** — Supabase clients, content access, GitHub API, rate limiting.
-- **`middleware.ts`** — Next middleware: session refresh + 1-hour max session age on `/admin`, plus the `x-pathname` header. Server-side admin auth is enforced per-route by `lib/auth.ts` (`requireAdmin`), not by the middleware.
+- `app/page.tsx`: Pat's introduction, About, contact copy, and page sections.
+- `app/components/TopHeroCard.tsx`: hero heading and subtitle.
+- `app/components/HowWeInvest.tsx`: the six approach items.
+- `app/components/`: team, advisors, newsletter, navigation, and footer.
+- `app/src/`: portfolio companies and testimonials.
+- `public/img/`: images and logos.
 
-Content is split in two: editable marketing copy lives in the Supabase
-`site_content` table (updated live, no deploy), while everything structural is
-committed to the code and ships on deploy. See the architecture doc for the full
-breakdown.
+Marketing copy is ordinary JSX text. There is no content object, content API,
+HTML injection, CMS, authentication system, or database dependency. The original
+production export from October 29, 2026 remains recoverable in Git history.
 
-## Branch / environment model
+## Deployment
 
-- `staging` branch → staging.active.vc → staging Supabase
-- `main` branch → production → production Supabase
+The `staging` branch deploys to staging.active.vc; `main` deploys to active.vc.
+Both render the same source-controlled copy.
 
-Publishing copies staging content to production, snapshots a semver version, and/or
-merges `staging` → `main` to trigger the production deploy. Details in
-[CLAUDE.md](./CLAUDE.md) and [ARCHITECTURE.md](./ARCHITECTURE.md).
+The only application API, `POST /api/subscribe`, forwards subscriptions to Beehiiv.
+Its rate limiter is process-local and resets on restart or serverless cold start.
 
-### Staging crawler protection
-
-`app/robots.ts` disallows crawling in non-production environments. In addition,
-`next.config.mjs` sends `X-Robots-Tag: noindex, nofollow` on every preview response,
-including static files, and on `staging.active.vc` even for a production build.
-Production requests to `active.vc` do not receive this header.
-
-These are directives for cooperative crawlers, not access controls. Google must
-fetch a URL to see `noindex`, so the robots.txt block can prevent removal of an
-already indexed URL. If staging appears in search results, temporarily permit
-crawling so Google can read the header, or restrict staging behind authentication.
-
-### Server runtime compatibility
-
-`vercel.json` sets `NODE_OPTIONS=--experimental-require-module` for deployed
-functions. The current `isomorphic-dompurify` dependency uses jsdom, whose CommonJS
-code loads ES modules. Vercel disables that Node capability by default, causing
-homepage requests to fail with `ERR_REQUIRE_ESM` unless it is explicitly enabled.
-Keep this setting when updating the sanitizer; removing sanitization is not a fix.
-
-Reference: [Vercel's Node.js runtime configuration](https://vercel.com/docs/functions/runtimes/node-js/advanced-node-configuration#experimental-nodejs-require-of-es-module).
-
-`proxy.ts` supplies a fresh script nonce and CSP on each request. The request
-headers let Next.js nonce its startup scripts, and the root layout passes the
-same nonce to Google Tag Manager. Cookie refresh responses preserve these headers.
-The selected Supabase origin is allowed for browser authentication. Other security
-headers and staging's indexing restrictions remain in `next.config.mjs`.
-
-## CHANGELOG
-
-* Feb 21, 2025 — Added Chris Saum back to Team; updated website text; contact email
-  changed to team@active.vc
+`proxy.ts` supplies CSP nonces to Next.js and Google Tag Manager. Security headers
+and staging's `noindex, nofollow` protection live in `next.config.mjs`.
+The homepage canonical URL is https://active.vc/.
