@@ -9,7 +9,7 @@ export default function HowWeInvest({ items }: { items: ApproachItem[] }) {
         {items.map((item, i) => (
           <div key={i} className="hwi-cell">
             <Image
-              src={item.icon}
+              src={item.icon.split('/').map(encodeURIComponent).join('/')}
               width={24}
               height={24}
               unoptimized
