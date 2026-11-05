@@ -25,6 +25,7 @@ export const PortfolioCompanies = [
     website: 'https://www.c1.ai/',
     width: defaultWidth,
     height: defaultHeight,
+    acquiredBy: 'Workday',
   },
   {
     companyName: 'Cart',
@@ -43,9 +44,10 @@ export const PortfolioCompanies = [
   {
     companyName: 'Fathom',
     src: '/img/logos/fathom.svg',
-    website: 'https://fathom.video/',
+    website: 'https://www.fathom.ai/',
     width: defaultWidth,
     height: defaultHeight,
+    acquiredBy: 'Superhuman',
   },
   {
     companyName: 'Slang.ai',
