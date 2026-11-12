@@ -106,9 +106,9 @@ export const PortfolioCompanies = [
     height: defaultHeight,
   },
   {
-    companyName: 'InsForge',
-    src: '/img/logos/insforge.svg',
-    website: 'https://insForge.dev/',
+    companyName: 'InstaBox',
+    src: '/img/logos/instabox.svg',
+    website: 'https://instabox.sh/',
     width: defaultWidth,
     height: defaultHeight,
   },
